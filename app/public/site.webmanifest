@@ -1,0 +1,23 @@
+{
+  "name": "HOD Hub (Web App)",
+  "short_name": "HOD Hub",
+  "description": "Calendários, consultorias, closers e indicadores HOD em um só lugar.",
+  "icons": [
+    { "src": "images/hod-hub-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "images/hod-hub-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "images/hod-hub-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "theme_color": "#0000FF",
+  "background_color": "#FFFFFF",
+  "display": "standalone",
+  "orientation": "any",
+  "scope": "./",
+  "start_url": "production/inicio.html",
+  "id": "hod-hub",
+  "lang": "pt-BR",
+  "categories": ["productivity", "business"],
+  "shortcuts": [
+    { "name": "Organograma", "url": "production/organograma.html" },
+    { "name": "Analytics", "url": "production/analytics.html" }
+  ]
+}

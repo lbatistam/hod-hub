@@ -1,0 +1,36 @@
+{
+  "name": "hod-platform",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "HOD Platform — API central, banco central e cliente compartilhado para os três apps HOD Hub (Web V1, HeroUI/Electron, shadcn).",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test \"test/**/*.test.ts\"",
+    "migrate:v1": "tsx src/scripts/migrate-v1.ts",
+    "compare:v1": "tsx src/scripts/compare-v1.ts",
+    "test:sync": "tsx src/scripts/sync-test.ts",
+    "backup": "tsx src/scripts/backup.ts",
+    "openapi": "tsx src/scripts/print-openapi.ts"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.4.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "~5.8.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

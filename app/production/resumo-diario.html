@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Resumo Diário · HOD Hub</title>
+<style>
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-warm: var(--surface);
+  --fg: #111111;
+  --fg-2: var(--fg);
+  --muted: #6b6b6b;
+  --meta: var(--muted);
+  --border: #e5e5e5;
+  --border-soft: var(--border);
+  --accent: #2f6feb;
+  --accent-on: #ffffff;
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+  --success: #17a34a;
+  --warn: #eab308;
+  --danger: #dc2626;
+  --font-display: "Inter", -apple-system, system-ui, sans-serif;
+  --font-body: "Inter", -apple-system, system-ui, sans-serif;
+  --font-mono: "Inter", -apple-system, system-ui, sans-serif;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+  --text-3xl: 48px;
+  --text-4xl: 64px;
+  --leading-body: 1.5;
+  --leading-tight: 1.2;
+  --tracking-display: -0.01em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-20: 80px;
+  --section-y-desktop: 80px;
+  --section-y-tablet: 48px;
+  --section-y-phone: 32px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 2px 8px color-mix(in oklab, var(--fg), transparent 92%);
+  --focus-ring: 0 0 0 3px color-mix(in oklab, var(--accent), transparent 70%);
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --container-max: 1200px;
+  --container-gutter-desktop: 24px;
+  --container-gutter-tablet: 16px;
+  --container-gutter-phone: 12px;
+  --light-bg: #fafafa;
+  --light-surface: #ffffff;
+  --light-fg: #111111;
+}
+html[data-theme="dark"]{--bg:color-mix(in oklab, var(--light-fg) 88%, var(--light-surface));--surface:color-mix(in oklab, var(--light-fg) 80%, var(--light-surface));--fg:color-mix(in oklab, var(--light-surface) 93%, var(--light-fg));--fg-2:var(--fg);--muted:color-mix(in oklab, var(--light-surface) 60%, var(--light-fg));--meta:var(--muted);--border:color-mix(in oklab, var(--light-fg) 24%, transparent);--border-soft:var(--border)}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:var(--text-base);line-height:var(--leading-body);-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--font-display);line-height:var(--leading-tight);letter-spacing:var(--tracking-display);margin:0;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+button{font:inherit;cursor:pointer}
+.app{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:100vh}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-5) var(--space-5) var(--space-4)}
+.brand-mark{width:40px;height:40px;border-radius:var(--radius-sm);background:var(--accent);color:var(--accent-on);display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);flex:none}
+.brand-name{font-family:var(--font-display);font-weight:600;font-size:19px;line-height:1.1;color:var(--fg)}
+.brand-sub{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted);letter-spacing:0.06em;text-transform:uppercase}
+.sidenav{padding:0 var(--space-3);display:flex;flex-direction:column;gap:2px}
+.sidenav-label{font-family:var(--font-mono);font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);padding:var(--space-4) var(--space-3) var(--space-2)}
+.nav-link{display:flex;align-items:center;gap:var(--space-3);min-height:44px;padding:10px var(--space-3);border-radius:var(--radius-sm);color:var(--muted);font-size:var(--text-sm);font-weight:500;border-left:3px solid transparent}
+.nav-link svg{width:18px;height:18px;flex:none}
+.nav-link:hover{background:color-mix(in oklab, var(--fg), transparent 94%);color:var(--fg);text-decoration:none}
+.nav-link[aria-current="page"]{background:color-mix(in oklab, var(--accent), transparent 90%);color:var(--accent);border-left-color:var(--accent)}
+.nav-badge{margin-left:auto;font-family:var(--font-mono);font-size:var(--text-xs);background:color-mix(in oklab, var(--fg), transparent 92%);color:var(--fg);border-radius:var(--radius-pill);padding:2px 8px;min-width:28px;text-align:center}
+.nav-link[aria-current="page"] .nav-badge{background:color-mix(in oklab, var(--accent), transparent 85%);color:var(--accent)}
+.sync-card{margin:var(--space-4);padding:var(--space-4);border:1px solid var(--border);border-radius:var(--radius-md);background:var(--bg);display:flex;gap:var(--space-3);align-items:flex-start}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--success);margin-top:7px;flex:none}
+.sync-card p{font-size:var(--text-sm)}
+.sync-card .meta{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted);margin-top:2px}
+.theme-toggle{margin:0 var(--space-4) var(--space-2);display:flex;align-items:center;gap:10px;min-height:44px;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--muted);font-size:var(--text-sm);font-weight:600;width:calc(100% - 32px)}
+.theme-toggle:hover{border-color:var(--fg);color:var(--fg)}
+.theme-toggle svg{width:18px;height:18px;flex:none}
+.admin{margin-top:auto;border-top:1px solid var(--border);padding:var(--space-4) var(--space-5);display:flex;align-items:center;gap:var(--space-3)}
+.avatar{width:40px;height:40px;border-radius:50%;background:color-mix(in oklab, var(--fg), transparent 90%);color:var(--fg);display:grid;place-items:center;font-weight:600;font-size:var(--text-sm);flex:none;border:1px solid var(--border)}
+.admin-name{font-size:var(--text-sm);font-weight:600;line-height:1.3}
+.admin-role{font-size:var(--text-xs);color:var(--muted)}
+.main{min-width:0;padding:var(--space-6) var(--space-8) var(--space-12);max-width:1360px;width:100%;margin:0 auto}
+.eyebrow{font-family:var(--font-mono);font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin:0 0 var(--space-2)}
+.greeting{font-size:clamp(28px,3vw,36px);font-weight:600}
+.date-line{color:var(--muted);font-size:var(--text-sm);margin-top:6px}
+.date-line .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.demo-note{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted);border:1px dashed var(--border);border-radius:var(--radius-pill);padding:6px 12px;margin-bottom:var(--space-4);background:var(--surface)}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-5)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px var(--space-4);border-radius:var(--radius-sm);border:1px solid transparent;font-size:var(--text-sm);font-weight:500;min-height:44px;white-space:nowrap;transition:background var(--motion-fast) var(--ease-standard),border-color var(--motion-fast) var(--ease-standard)}
+.btn-primary{background:var(--accent);color:var(--accent-on);border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-secondary{background:transparent;color:var(--fg);border-color:var(--border)}
+.btn-secondary:hover{border-color:var(--fg)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-4);margin-bottom:var(--space-5)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-5)}
+.kpi-label{font-size:var(--text-sm);color:var(--muted);font-weight:500}
+.kpi-value{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:var(--text-2xl);font-weight:600;margin:8px 0 4px}
+.kpi-sub{font-size:var(--text-xs);color:var(--muted)}
+.kpi-live .kpi-value{color:var(--accent);display:flex;align-items:center;gap:8px}
+.pulse{width:9px;height:9px;border-radius:50%;background:var(--accent);position:relative;flex:none}
+.pulse::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--accent);opacity:0.35;animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{0%{transform:scale(0.6);opacity:0.6}100%{transform:scale(1.15);opacity:0}}
+.cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:var(--space-5);align-items:start}
+.stack{display:flex;flex-direction:column;gap:var(--space-5);min-width:0}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin-bottom:var(--space-4)}
+.section-head h2{font-size:var(--text-xl)}
+.section-head .meta{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:var(--radius-pill);font-family:var(--font-mono);font-size:11px;letter-spacing:0.04em;text-transform:uppercase;border:1px solid transparent;white-space:nowrap}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.badge-success{background:color-mix(in oklab, var(--success), transparent 88%);color:color-mix(in oklab, var(--success), black 28%);border-color:color-mix(in oklab, var(--success), transparent 70%)}
+.badge-warn{background:color-mix(in oklab, var(--warn), transparent 82%);color:color-mix(in oklab, var(--warn), black 32%);border-color:color-mix(in oklab, var(--warn), transparent 55%)}
+.badge-danger{background:color-mix(in oklab, var(--danger), transparent 88%);color:var(--danger);border-color:color-mix(in oklab, var(--danger), transparent 70%)}
+.badge-muted{background:transparent;color:var(--muted);border-color:var(--border)}
+.badge-accent{background:color-mix(in oklab, var(--accent), transparent 90%);color:var(--accent);border-color:color-mix(in oklab, var(--accent), transparent 70%)}
+.timeline{display:flex;align-items:flex-end;gap:6px;height:148px;padding:12px 4px 0}
+.tcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+.tbars{display:flex;flex-direction:column-reverse;gap:2px;width:100%;max-width:44px}
+.tbar{border-radius:4px;min-height:4px;width:100%}
+.tlabel{font-family:var(--font-mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tcol.now .tlabel{color:var(--accent);font-weight:700}
+.live-card{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:var(--radius-md);background:var(--surface);padding:var(--space-5)}
+.live-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
+.client{font-weight:600;font-size:17px}
+.client-sub{font-size:var(--text-sm);color:var(--muted)}
+.live-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 0;margin-bottom:12px}
+.live-grid span{display:block;font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)}
+.live-grid strong{font-size:var(--text-sm)}
+.action{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--border)}
+.action:first-of-type{border-top:0;padding-top:0}
+.check{width:24px;height:24px;min-width:24px;min-height:24px;border:1px solid var(--border);border-radius:6px;background:transparent;display:grid;place-items:center;margin-top:2px}
+.check[aria-checked="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.action.done .action-title{text-decoration:line-through;color:var(--muted)}
+.action-title{font-size:var(--text-sm);font-weight:600}
+.action-sub{font-size:var(--text-xs);color:var(--muted)}
+.table-wrap{overflow-x:auto}
+table.ds{width:100%;border-collapse:collapse;font-size:14px;min-width:760px}
+.ds th,.ds td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+.ds th{color:var(--muted);font-weight:500;font-family:var(--font-mono);font-size:12px;letter-spacing:0.04em;text-transform:uppercase}
+.ds tbody tr:hover{background:color-mix(in oklab, var(--fg), transparent 95%)}
+.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0 12px;min-height:44px;min-width:220px;flex:1}
+.search input{border:0;background:transparent;color:var(--fg);font:inherit;font-size:var(--text-sm);width:100%;padding:10px 0}
+.search input:focus{outline:none}
+.search:focus-within{border-color:var(--accent);box-shadow:var(--focus-ring)}
+.select{min-height:44px;padding:10px 36px 10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--fg);font:inherit;font-size:var(--text-sm);appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat}
+.select:focus{border-color:var(--accent)}
+.pagefoot{margin-top:var(--space-6);padding-top:var(--space-4);border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+.pagefoot .meta{font-family:var(--font-mono);font-size:var(--text-xs)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg);padding:12px 18px;border-radius:var(--radius-sm);font-size:var(--text-sm);opacity:0;pointer-events:none;transition:opacity var(--motion-base) var(--ease-standard),transform var(--motion-base) var(--ease-standard);z-index:60;box-shadow:var(--elev-raised);max-width:min(92vw,520px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (max-width:1120px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.cols{grid-template-columns:1fr}.live-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:920px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border)}.sidenav{flex-direction:row;overflow:auto;padding-bottom:12px}.sidenav-label,.sync-card{display:none}.nav-link{white-space:nowrap;border-left:0;border-bottom:3px solid transparent;border-radius:0}.nav-link[aria-current="page"]{border-bottom-color:var(--accent)}.main{padding:16px 16px 48px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<script>(function(){try{var t=localStorage.getItem('hod-theme');if(t==='dark'){document.documentElement.dataset.theme='dark'}else if(t!=='light'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches&&t==='system'){document.documentElement.dataset.theme='dark'}}catch(e){}})();</script>
+<script>(function(){try{var z=localStorage.getItem('hod-zoom');if(z&&z!=='100%'){document.documentElement.style.zoom=z}}catch(e){}})();</script>
+</head>
+<body data-page="hod-daily-summary">
+<div class="app">
+<aside class="sidebar" data-od-id="navegacao-lateral" aria-label="Navegação principal">
+<div class="brand" data-od-id="logo-hod-hub"><div class="brand-mark" aria-hidden="true">H</div><div><div class="brand-name">HOD Hub</div><div class="brand-sub">Consultorias</div></div></div>
+<nav class="sidenav" aria-label="Páginas">
+<div class="sidenav-label">Operação</div>
+<a class="nav-link" data-od-id="nav-inicio" href="inicio.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Início</a>
+<a class="nav-link" data-od-id="nav-organograma" href="organograma.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="4" width="16" height="5" rx="1.5"/><rect x="4" y="15" width="7" height="5" rx="1.5"/><rect x="13" y="15" width="7" height="5" rx="1.5"/><path d="M12 9v3M7.5 15v-2.5h9V15"/></svg>Organograma do Dia<span class="nav-badge">18</span></a>
+<a class="nav-link" data-od-id="nav-horarios" href="disponibilidade.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.8 1.8"/></svg>Horários Livres<span class="nav-badge">6</span></a>
+<a class="nav-link" data-od-id="nav-resumo" href="resumo-diario.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 12.5h6M9 16h4"/></svg>Resumo Diário</a>
+<a class="nav-link" data-od-id="nav-analytics" href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Analytics</a>
+<a class="nav-link" data-od-id="nav-config" href="configuracoes.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.06-.4.1-.8.1-1.2Z"/></svg>Configurações</a>
+</nav>
+<div class="sync-card" data-od-id="status-agenda"><span class="sync-dot" aria-hidden="true"></span><div><p><strong>Google Agenda sincronizada</strong></p><p class="meta">Atualizado às <span id="sync-time">09:42</span> · 2 agendas</p></div></div>
+<button class="theme-toggle" data-od-id="alternar-tema" type="button" aria-pressed="false" aria-label="Alternar entre modo claro e escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 13.5A8 8 0 0 1 10.5 4 8 8 0 1 0 20 13.5Z"/></svg><span>Modo escuro</span></button>
+<script>(function(){var b=document.currentScript.previousElementSibling;function paint(){var d=document.documentElement.dataset.theme==='dark';b.setAttribute('aria-pressed',d?'true':'false');b.querySelector('span').textContent=d?'Modo claro':'Modo escuro'}b.addEventListener('click',function(){var d=document.documentElement.dataset.theme!=='dark';if(d){document.documentElement.dataset.theme='dark'}else{document.documentElement.removeAttribute('data-theme')}try{localStorage.setItem('hod-theme',d?'dark':'light')}catch(e){}paint();var t=document.getElementById('toast');if(t){t.textContent=d?'Modo escuro ativado.':'Modo claro ativado.';t.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(function(){t.classList.remove('show')},2200)}});paint()})();</script>
+<div class="admin" data-od-id="perfil-admin"><div class="avatar" aria-hidden="true">DM</div><div style="min-width:0"><div class="admin-name">Diego Martins</div><div class="admin-role">Administrador · Operação</div></div></div>
+</aside>
+<main class="main" id="conteudo">
+<span class="demo-note" data-od-id="aviso-demo">Demonstração · fechamento parcial às 14:05 · valores de exemplo</span>
+<header class="topbar" data-od-id="cabecalho-resumo">
+<div><p class="eyebrow">HOD Hub · Fechamento do dia</p><h1 class="greeting">Resumo Diário</h1><p class="date-line" id="date-line">terça-feira, 22 de setembro de 2026 · <span class="num">18</span> consultorias · 3 closers</p></div>
+<div class="daily-header-actions"><button class="btn btn-secondary" id="btn-sync" type="button">Sincronizar agora</button><button class="btn btn-secondary" data-od-id="btn-exportar" id="btn-export" type="button">Exportar resumo</button></div>
+</header>
+<section class="datebar operational-datebar" data-od-id="controle-data" aria-label="Controle de data"><div class="nav-btns"><button class="arrow-btn" id="prev-day" type="button" aria-label="Dia anterior">‹</button><button class="arrow-btn" id="next-day" type="button" aria-label="Próximo dia">›</button><button class="today-btn" id="today-btn" type="button">Hoje</button></div><div class="date-current"><strong id="selected-date">22 de setembro de 2026</strong><span>Fechamento operacional do dia</span></div><label class="availability-date-picker" for="daily-date"><span>Ir para uma data</span><input id="daily-date" type="date" aria-label="Escolher data do resumo diário" /></label></section>
+<section aria-label="Indicadores do dia" data-od-id="indicadores-resumo">
+<div class="kpis">
+<div class="card" data-od-id="kpi-qualified"><div class="kpi-label">Qualificados no dia</div><div class="kpi-value num">—</div><div class="kpi-sub">novos leads agendados no dia</div></div>
+<div class="card" data-od-id="kpi-scheduled"><div class="kpi-label">Agendamentos</div><div class="kpi-value num">—</div><div class="kpi-sub">consultorias na agenda do dia</div></div>
+<div class="card" data-od-id="kpi-past"><div class="kpi-label">Reuniões passadas</div><div class="kpi-value num">—</div><div class="kpi-sub">reuniões passadas</div></div>
+<div class="card" data-od-id="kpi-happened"><div class="kpi-label">Ocorridas</div><div class="kpi-value num">—</div><div class="kpi-sub">reuniões ocorridas</div></div>
+<div class="card" data-od-id="kpi-noshow"><div class="kpi-label">No-show</div><div class="kpi-value num">—</div><div class="kpi-sub">faltas registradas</div></div>
+</div>
+</section>
+<div class="cols">
+<div class="stack">
+<section class="card" data-od-id="linha-do-dia" aria-label="Linha do dia">
+<div class="section-head"><h2>Linha do dia</h2><span class="meta">distribuição por horário · 09h – 19h</span></div>
+<div class="timeline" id="timeline" role="img" aria-label="Distribuição das 18 consultorias por horário, com pico entre 14h e 16h"></div>
+<p class="meta" style="font-family:var(--font-mono);font-size:12px;color:var(--muted);margin-top:12px">Pico entre 14h e 16h · 6 consultorias · manhã com 2 no-shows e 2 canceladas.</p>
+</section>
+<section class="card" data-od-id="tabela-recentes" aria-label="Consultorias recentes">
+<div class="section-head"><h2>Consultorias recentes</h2><span class="meta num" id="table-count">8 registros</span></div>
+<div class="toolbar"><label class="search"><input id="campo-busca" type="search" placeholder="Buscar cliente, closer…" aria-label="Buscar na tabela" /></label><select class="select" id="f-situacao" aria-label="Filtrar por situação"><option value="todas">Todas as situações</option><option value="Compareceu">Compareceu</option><option value="No-show">No-show</option><option value="Cancelada">Cancelada</option><option value="Agendada">Agendada</option><option value="Em sessão">Em sessão</option></select></div>
+<div class="table-wrap"><table class="ds"><thead><tr><th>Cliente</th><th>Horário</th><th>Closer</th><th>Confirmação</th><th>Situação</th></tr></thead><tbody id="tbody">
+<tr data-search="patrícia gomes rafael lima" data-sit="Em sessão"><td><strong>Patrícia Gomes</strong></td><td class="num">13:50 · 30 min</td><td>Rafael Lima</td><td><span class="badge badge-success"><span class="badge-dot"></span>Confirmada</span></td><td><span class="badge badge-accent"><span class="badge-dot"></span>Em sessão</span></td></tr>
+<tr data-search="juliana castro camila sousa" data-sit="No-show"><td><strong>Juliana Castro</strong></td><td class="num">13:00 · 30 min</td><td>Camila Sousa</td><td><span class="badge badge-warn"><span class="badge-dot"></span>Aguardando</span></td><td><span class="badge badge-danger"><span class="badge-dot"></span>No-show</span></td></tr>
+<tr data-search="sérgio nunes camila sousa" data-sit="Compareceu"><td><strong>Sérgio Nunes</strong></td><td class="num">12:30 · 30 min</td><td>Camila Sousa</td><td><span class="badge badge-success"><span class="badge-dot"></span>Confirmada</span></td><td><span class="badge badge-success"><span class="badge-dot"></span>Compareceu</span></td></tr>
+<tr data-search="elaine pires camila sousa" data-sit="Cancelada"><td><strong>Elaine Pires</strong></td><td class="num">11:30 · 30 min</td><td>Camila Sousa</td><td><span class="badge badge-warn"><span class="badge-dot"></span>Aguardando</span></td><td><span class="badge badge-muted">Cancelada</span></td></tr>
+<tr data-search="larissa campos rafael lima" data-sit="Compareceu"><td><strong>Larissa Campos</strong></td><td class="num">11:00 · 30 min</td><td>Rafael Lima</td><td><span class="badge badge-success"><span class="badge-dot"></span>Confirmada</span></td><td><span class="badge badge-success"><span class="badge-dot"></span>Compareceu</span></td></tr>
+<tr data-search="roberto farias thiago abreu" data-sit="No-show"><td><strong>Roberto Farias</strong></td><td class="num">10:30 · 30 min</td><td>Thiago Abreu</td><td><span class="badge badge-muted">Sem retorno</span></td><td><span class="badge badge-danger"><span class="badge-dot"></span>No-show</span></td></tr>
+<tr data-search="bruno sales rafael lima" data-sit="Cancelada"><td><strong>Bruno Sales</strong></td><td class="num">10:00 · 30 min</td><td>Rafael Lima</td><td><span class="badge badge-muted">Sem retorno</span></td><td><span class="badge badge-muted">Cancelada</span></td></tr>
+<tr data-search="diego almeida thiago abreu" data-sit="Compareceu"><td><strong>Diego Almeida</strong></td><td class="num">09:40 · 30 min</td><td>Thiago Abreu</td><td><span class="badge badge-success"><span class="badge-dot"></span>Confirmada</span></td><td><span class="badge badge-success"><span class="badge-dot"></span>Compareceu</span></td></tr>
+</tbody></table></div>
+</section>
+</div>
+<div class="stack">
+<section class="live-card" data-od-id="destaque-agora" aria-label="Acontecendo agora">
+<div class="live-top"><div><p class="eyebrow">Acontecendo agora</p><div class="client">Patrícia Gomes</div><div class="client-sub">Sessão com Rafael Lima · termina às 14:20</div></div><span class="badge badge-accent"><span class="badge-dot"></span><span class="pulse" aria-hidden="true"></span>Ao vivo</span></div>
+<div class="live-grid"><div><span>Horário</span><strong class="num">13:50 – 14:20</strong></div><div><span>Closer</span><strong>Rafael Lima</strong></div><div><span>Sala</span><strong>Meet Sala 03</strong></div><div><span>Check-in</span><strong class="num">13:52</strong></div></div>
+<div style="display:flex;gap:12px;flex-wrap:wrap"><button class="btn btn-secondary" type="button" id="btn-meet">Abrir Meet</button><a href="organograma.html" style="align-self:center">Ver no organograma</a></div>
+</section>
+<section class="card" data-od-id="proximas-acoes" aria-label="Próximas ações">
+<div class="section-head"><h2>Próximas ações</h2><span class="meta num" id="actions-count">2 de 5 concluídas</span></div>
+<div id="actions">
+<div class="action" data-od-id="acao-1"><button class="check" type="button" role="checkbox" aria-checked="true" aria-label="Concluir ação">✓</button><div><div class="action-title">Confirmar Beatriz Nogueira · 15:30</div><div class="action-sub">WhatsApp enviado há 2 h · Rafael responsável</div></div></div>
+<div class="action done" data-od-id="acao-2"><button class="check" type="button" role="checkbox" aria-checked="true" aria-label="Concluir ação">✓</button><div><div class="action-title">Revisar no-show de Roberto Farias</div><div class="action-sub">Ligar até 15:00 · Thiago responsável</div></div></div>
+<div class="action" data-od-id="acao-3"><button class="check" type="button" role="checkbox" aria-checked="false" aria-label="Concluir ação"></button><div><div class="action-title">Reagendar Lucas Andrade para amanhã</div><div class="action-sub">Janela sugerida 09:30 · confirmar com Thiago</div></div></div>
+<div class="action" data-od-id="acao-4"><button class="check" type="button" role="checkbox" aria-checked="false" aria-label="Concluir ação"></button><div><div class="action-title">Enviar lembrete para Paulo Henrique · 18:00</div><div class="action-sub">2ª tentativa · modelo de confirmação curto</div></div></div>
+<div class="action" data-od-id="acao-5"><button class="check" type="button" role="checkbox" aria-checked="false" aria-label="Concluir ação"></button><div><div class="action-title">Preparar repasse da noite para os closers</div><div class="action-sub">Incluir faltas, reagendamentos e janelas livres</div></div></div>
+</div>
+</section>
+</div>
+</div>
+<footer class="pagefoot" data-od-id="rodape"><span><a href="inicio.html">← Voltar ao Início</a> · © HOD Hub · Operação interna</span><span class="meta">Fonte: Google Agenda · protótipo navegável · Resumo v1</span></footer>
+</main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="/src/neutral-main.js"></script>
+</body>
+</html>

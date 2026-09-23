@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="390" height="104" viewBox="0 0 390 104" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">HOD Hub</title>
+  <desc id="desc">Símbolo minimalista preto seguido pela assinatura HOD Hub.</desc>
+  <circle cx="52" cy="52" r="44" fill="#050505"/>
+  <rect x="34.7" y="31.5" width="8.5" height="41" rx="4.25" fill="#fff"/>
+  <rect x="60.8" y="31.5" width="8.5" height="41" rx="4.25" fill="#fff"/>
+  <circle cx="52" cy="52" r="5.3" fill="#fff"/>
+  <text x="118" y="73" fill="#050505" font-family="'Plus Jakarta Sans', 'SF Pro Display', Arial, sans-serif" font-size="58" font-weight="700" letter-spacing="-2.8">HOD</text>
+  <text x="267" y="73" fill="#050505" font-family="'Plus Jakarta Sans', 'SF Pro Display', Arial, sans-serif" font-size="58" font-weight="400" letter-spacing="-2.8">Hub</text>
+</svg>

@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Organograma do Dia · HOD Hub</title>
+<style>
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-warm: var(--surface);
+  --fg: #111111;
+  --fg-2: var(--fg);
+  --muted: #6b6b6b;
+  --meta: var(--muted);
+  --border: #e5e5e5;
+  --border-soft: var(--border);
+  --accent: #2f6feb;
+  --accent-on: #ffffff;
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+  --success: #17a34a;
+  --warn: #eab308;
+  --danger: #dc2626;
+  --font-display: "Inter", -apple-system, system-ui, sans-serif;
+  --font-body: "Inter", -apple-system, system-ui, sans-serif;
+  --font-mono: "Inter", -apple-system, system-ui, sans-serif;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+  --text-3xl: 48px;
+  --text-4xl: 64px;
+  --leading-body: 1.5;
+  --leading-tight: 1.2;
+  --tracking-display: -0.01em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-20: 80px;
+  --section-y-desktop: 80px;
+  --section-y-tablet: 48px;
+  --section-y-phone: 32px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 2px 8px color-mix(in oklab, var(--fg), transparent 92%);
+  --focus-ring: 0 0 0 3px color-mix(in oklab, var(--accent), transparent 70%);
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --container-max: 1200px;
+  --container-gutter-desktop: 24px;
+  --container-gutter-tablet: 16px;
+  --container-gutter-phone: 12px;
+  --light-bg: #fafafa;
+  --light-surface: #ffffff;
+  --light-fg: #111111;
+}
+html[data-theme="dark"]{--bg:color-mix(in oklab, var(--light-fg) 88%, var(--light-surface));--surface:color-mix(in oklab, var(--light-fg) 80%, var(--light-surface));--fg:color-mix(in oklab, var(--light-surface) 93%, var(--light-fg));--fg-2:var(--fg);--muted:color-mix(in oklab, var(--light-surface) 60%, var(--light-fg));--meta:var(--muted);--border:color-mix(in oklab, var(--light-fg) 24%, transparent);--border-soft:var(--border)}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:var(--text-base);line-height:var(--leading-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+h1,h2,h3{font-family:var(--font-display);line-height:var(--leading-tight);letter-spacing:var(--tracking-display);margin:0;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+button{font:inherit;cursor:pointer}
+.app{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:100vh}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-5) var(--space-5) var(--space-4)}
+.brand-mark{width:40px;height:40px;border-radius:var(--radius-sm);background:var(--accent);color:var(--accent-on);display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);flex:none}
+.brand-name{font-family:var(--font-display);font-weight:600;font-size:19px;line-height:1.1;color:var(--fg)}
+.brand-sub{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted);letter-spacing:0.06em;text-transform:uppercase}
+.sidenav{padding:0 var(--space-3);display:flex;flex-direction:column;gap:2px}
+.sidenav-label{font-family:var(--font-mono);font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);padding:var(--space-4) var(--space-3) var(--space-2)}
+.nav-link{display:flex;align-items:center;gap:var(--space-3);min-height:44px;padding:10px var(--space-3);border-radius:var(--radius-sm);color:var(--muted);font-size:var(--text-sm);font-weight:500;border-left:3px solid transparent}
+.nav-link svg{width:18px;height:18px;flex:none}
+.nav-link:hover{background:color-mix(in oklab, var(--fg), transparent 94%);color:var(--fg);text-decoration:none}
+.nav-link[aria-current="page"]{background:color-mix(in oklab, var(--accent), transparent 90%);color:var(--accent);border-left-color:var(--accent)}
+.nav-badge{margin-left:auto;font-family:var(--font-mono);font-size:var(--text-xs);background:color-mix(in oklab, var(--fg), transparent 92%);color:var(--fg);border-radius:var(--radius-pill);padding:2px 8px;min-width:28px;text-align:center}
+.nav-link[aria-current="page"] .nav-badge{background:color-mix(in oklab, var(--accent), transparent 85%);color:var(--accent)}
+.sync-card{margin:var(--space-4);padding:var(--space-4);border:1px solid var(--border);border-radius:var(--radius-md);background:var(--bg);display:flex;gap:var(--space-3);align-items:flex-start}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--success);margin-top:7px;flex:none}
+.sync-card p{font-size:var(--text-sm)}
+.sync-card .meta{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted);margin-top:2px}
+.theme-toggle{margin:0 var(--space-4) var(--space-2);display:flex;align-items:center;gap:10px;min-height:44px;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--muted);font-size:var(--text-sm);font-weight:600;width:calc(100% - 32px)}
+.theme-toggle:hover{border-color:var(--fg);color:var(--fg)}
+.theme-toggle svg{width:18px;height:18px;flex:none}
+.admin{margin-top:auto;border-top:1px solid var(--border);padding:var(--space-4) var(--space-5);display:flex;align-items:center;gap:var(--space-3)}
+.avatar{width:40px;height:40px;border-radius:50%;background:color-mix(in oklab, var(--fg), transparent 90%);color:var(--fg);display:grid;place-items:center;font-weight:600;font-size:var(--text-sm);flex:none;border:1px solid var(--border)}
+.admin-name{font-size:var(--text-sm);font-weight:600;line-height:1.3}
+.admin-role{font-size:var(--text-xs);color:var(--muted)}
+.main{min-width:0;padding:var(--space-6) var(--space-8) var(--space-12);max-width:1560px;width:100%;margin:0 auto}
+.eyebrow{font-family:var(--font-mono);font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin:0 0 var(--space-2)}
+.greeting{font-size:clamp(28px,3vw,36px);font-weight:600}
+.date-line{color:var(--muted);font-size:var(--text-sm);margin-top:6px}
+.date-line .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.demo-note{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted);border:1px dashed var(--border);border-radius:var(--radius-pill);padding:6px 12px;margin-bottom:var(--space-4);background:var(--surface)}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-5)}
+.top-actions{display:flex;gap:var(--space-3);align-items:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px var(--space-4);border-radius:var(--radius-sm);border:1px solid transparent;font-size:var(--text-sm);font-weight:500;min-height:44px;white-space:nowrap;transition:background var(--motion-fast) var(--ease-standard),border-color var(--motion-fast) var(--ease-standard)}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--accent);color:var(--accent-on);border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-primary:active{background:var(--accent-active)}
+.btn-secondary{background:transparent;color:var(--fg);border-color:var(--border)}
+.btn-secondary:hover{border-color:var(--fg)}
+.date-strip{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-4)}
+.date-btn{min-height:44px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--muted);min-width:132px}
+.date-btn strong{font-size:var(--text-sm);font-weight:600;color:var(--fg)}
+.date-btn span{font-family:var(--font-mono);font-size:var(--text-xs)}
+.date-btn:hover{border-color:var(--fg)}
+.date-btn[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in oklab, var(--accent), transparent 92%)}
+.date-btn[aria-pressed="true"] strong{color:var(--accent)}
+.toolbar{display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-4);margin-bottom:var(--space-5)}
+.search{display:flex;align-items:center;gap:var(--space-2);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0 var(--space-3);min-height:44px;min-width:260px;flex:1}
+.search input{border:0;background:transparent;color:var(--fg);font:inherit;font-size:var(--text-sm);width:100%;padding:10px 0}
+.search input:focus{outline:none}
+.search:focus-within{border-color:var(--accent);box-shadow:var(--focus-ring)}
+.search svg{width:16px;height:16px;color:var(--muted);flex:none}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;color:var(--muted)}
+.select{min-height:44px;padding:10px 36px 10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--fg);font:inherit;font-size:var(--text-sm);appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;min-width:180px}
+.select:focus{border-color:var(--accent)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:var(--radius-pill);font-family:var(--font-mono);font-size:11px;letter-spacing:0.04em;text-transform:uppercase;border:1px solid transparent;white-space:nowrap}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.badge-success{background:color-mix(in oklab, var(--success), transparent 88%);color:color-mix(in oklab, var(--success), black 28%);border-color:color-mix(in oklab, var(--success), transparent 70%)}
+.badge-warn{background:color-mix(in oklab, var(--warn), transparent 82%);color:color-mix(in oklab, var(--warn), black 32%);border-color:color-mix(in oklab, var(--warn), transparent 55%)}
+.badge-danger{background:color-mix(in oklab, var(--danger), transparent 88%);color:var(--danger);border-color:color-mix(in oklab, var(--danger), transparent 70%)}
+.badge-muted{background:transparent;color:var(--muted);border-color:var(--border)}
+.badge-accent{background:color-mix(in oklab, var(--accent), transparent 90%);color:var(--accent);border-color:color-mix(in oklab, var(--accent), transparent 70%)}
+.kanban-wrap{overflow-x:auto;padding-bottom:var(--space-3)}
+.kanban{display:grid;grid-template-columns:repeat(6,minmax(288px,1fr));gap:var(--space-4);min-width:1840px}
+.col{background:color-mix(in oklab, var(--fg), transparent 96%);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-3);min-height:420px}
+.col.dragover{border-color:var(--accent);box-shadow:var(--focus-ring)}
+.col-head{display:flex;align-items:center;gap:var(--space-2);padding:2px 4px}
+.col-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.col-title{font-weight:600;font-size:var(--text-sm)}
+.col-count{margin-left:auto;font-family:var(--font-mono);font-size:var(--text-xs);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-pill);padding:2px 9px;min-width:32px;text-align:center;font-variant-numeric:tabular-nums}
+.kcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-4);display:flex;flex-direction:column;gap:10px;cursor:grab}
+.kcard:active{cursor:grabbing}
+.kcard.live{border-left:4px solid var(--accent);box-shadow:var(--elev-raised)}
+.kcard.dragging{opacity:0.55}
+.kcard-top{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-2)}
+.kclient{font-weight:600;font-size:15px;line-height:1.3}
+.ktime{font-family:var(--font-mono);font-size:var(--text-sm);font-variant-numeric:tabular-nums;font-weight:600}
+.ktime small{color:var(--muted);font-weight:400}
+.kmeta{font-size:13px;color:var(--muted);line-height:1.5}
+.kmeta strong{color:var(--fg);font-weight:600}
+.kphone{font-family:var(--font-mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--fg)}
+.live-line{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--accent)}
+.pulse{width:9px;height:9px;border-radius:50%;background:var(--accent);position:relative;flex:none}
+.pulse::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--accent);opacity:0.35;animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{0%{transform:scale(0.6);opacity:0.6}100%{transform:scale(1.15);opacity:0}}
+.k-actions{display:flex;gap:var(--space-2);flex-wrap:wrap;border-top:1px solid var(--border);padding-top:10px}
+.kbtn{min-height:44px;display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;font-size:13px;font-weight:500;color:var(--fg)}
+.kbtn:hover{border-color:var(--fg)}
+.kbtn svg{width:15px;height:15px}
+.kmenu-wrap{position:relative;margin-left:auto}
+.menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--elev-raised);min-width:220px;padding:6px;display:none;z-index:20}
+.menu.open{display:block}
+.menu button{display:flex;width:100%;text-align:left;background:transparent;border:0;padding:12px 10px;font-size:var(--text-sm);border-radius:6px;min-height:44px;align-items:center}
+.menu button:hover{background:color-mix(in oklab, var(--fg), transparent 94%)}
+.col-empty{font-size:13px;color:var(--muted);text-align:center;padding:18px 8px;border:1px dashed var(--border);border-radius:var(--radius-sm);display:none}
+.modal-back{position:fixed;inset:0;background:color-mix(in oklab, var(--fg), transparent 55%);display:none;place-items:center;z-index:40;padding:20px}
+.modal-back.open{display:grid}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);max-width:520px;width:100%;padding:var(--space-6);box-shadow:var(--elev-raised)}
+.modal h2{font-size:var(--text-xl);margin-bottom:4px}
+.modal .meta{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted);margin-bottom:var(--space-4)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);margin:var(--space-4) 0}
+.detail-grid div span{display:block;font-family:var(--font-mono);font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:2px}
+.pagefoot{margin-top:var(--space-6);padding-top:var(--space-4);border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap;color:var(--muted);font-size:13px}
+.pagefoot .meta{font-family:var(--font-mono);font-size:var(--text-xs)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg);padding:12px 18px;border-radius:var(--radius-sm);font-size:var(--text-sm);opacity:0;pointer-events:none;transition:opacity var(--motion-base) var(--ease-standard),transform var(--motion-base) var(--ease-standard);z-index:60;box-shadow:var(--elev-raised);max-width:min(92vw,520px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (max-width:920px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border)}.sidenav{flex-direction:row;overflow:auto;padding-bottom:var(--space-3)}.sidenav-label,.sync-card{display:none}.nav-link{white-space:nowrap;border-left:0;border-bottom:3px solid transparent;border-radius:0}.nav-link[aria-current="page"]{border-bottom-color:var(--accent)}.main{padding:var(--space-4) var(--space-4) var(--space-12)}.kanban{min-width:0;grid-template-columns:1fr}.kanban-wrap{overflow:visible}}
+</style>
+<script>(function(){try{var t=localStorage.getItem('hod-theme');if(t==='dark'){document.documentElement.dataset.theme='dark'}else if(t!=='light'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches&&t==='system'){document.documentElement.dataset.theme='dark'}}catch(e){}})();</script>
+<script>(function(){try{var z=localStorage.getItem('hod-zoom');if(z&&z!=='100%'){document.documentElement.style.zoom=z}}catch(e){}})();</script>
+</head>
+<body data-page="hod-organograma">
+<div class="app">
+<aside class="sidebar" data-od-id="navegacao-lateral" aria-label="Navegação principal">
+<div class="brand" data-od-id="logo-hod-hub"><div class="brand-mark" aria-hidden="true">H</div><div><div class="brand-name">HOD Hub</div><div class="brand-sub">Consultorias</div></div></div>
+<nav class="sidenav" aria-label="Páginas">
+<div class="sidenav-label">Operação</div>
+<a class="nav-link" data-od-id="nav-inicio" href="inicio.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Início</a>
+<a class="nav-link" data-od-id="nav-organograma" href="organograma.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="4" width="16" height="5" rx="1.5"/><rect x="4" y="15" width="7" height="5" rx="1.5"/><rect x="13" y="15" width="7" height="5" rx="1.5"/><path d="M12 9v3M7.5 15v-2.5h9V15"/></svg>Organograma do Dia<span class="nav-badge">18</span></a>
+<a class="nav-link" data-od-id="nav-horarios" href="disponibilidade.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.8 1.8"/></svg>Horários Livres<span class="nav-badge">6</span></a>
+<a class="nav-link" data-od-id="nav-resumo" href="resumo-diario.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 12.5h6M9 16h4"/></svg>Resumo Diário</a>
+<a class="nav-link" data-od-id="nav-analytics" href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Analytics</a>
+<a class="nav-link" data-od-id="nav-config" href="configuracoes.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.06-.4.1-.8.1-1.2Z"/></svg>Configurações</a>
+</nav>
+<div class="sync-card" data-od-id="status-agenda"><span class="sync-dot" aria-hidden="true"></span><div><p><strong>Google Agenda sincronizada</strong></p><p class="meta">Atualizado às <span id="sync-time">09:42</span> · 2 agendas</p></div></div>
+<button class="theme-toggle" data-od-id="alternar-tema" type="button" aria-pressed="false" aria-label="Alternar entre modo claro e escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 13.5A8 8 0 0 1 10.5 4 8 8 0 1 0 20 13.5Z"/></svg><span>Modo escuro</span></button>
+<script>(function(){var b=document.currentScript.previousElementSibling;function paint(){var d=document.documentElement.dataset.theme==='dark';b.setAttribute('aria-pressed',d?'true':'false');b.querySelector('span').textContent=d?'Modo claro':'Modo escuro'}b.addEventListener('click',function(){var d=document.documentElement.dataset.theme!=='dark';if(d){document.documentElement.dataset.theme='dark'}else{document.documentElement.removeAttribute('data-theme')}try{localStorage.setItem('hod-theme',d?'dark':'light')}catch(e){}paint();var t=document.getElementById('toast');if(t){t.textContent=d?'Modo escuro ativado.':'Modo claro ativado.';t.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(function(){t.classList.remove('show')},2200)}});paint()})();</script>
+<div class="admin" data-od-id="perfil-admin"><div class="avatar" aria-hidden="true">DM</div><div style="min-width:0"><div class="admin-name">Diego Martins</div><div class="admin-role">Administrador · Operação</div></div></div>
+</aside>
+<main class="main" id="conteudo">
+<span class="demo-note" data-od-id="aviso-demo">Demonstração · arraste cards entre colunas para mover a situação</span>
+<header class="topbar" data-od-id="cabecalho-organograma">
+<div><p class="eyebrow">HOD Hub · Grade do dia</p><h1 class="greeting">Organograma do Dia</h1><p class="date-line" id="date-line">terça-feira, 22 de setembro de 2026 · <span class="num">18</span> consultorias · 3 closers em operação</p></div>
+<div class="top-actions"><button class="btn btn-secondary" data-od-id="btn-sincronizar" id="btn-sync" type="button">Sincronizar agora</button><button class="btn btn-primary" data-od-id="btn-nova-consultoria" type="button">Nova consultoria</button></div>
+</header>
+<section data-od-id="controle-data" aria-label="Controle de data">
+<div class="datebar operational-datebar"><div class="nav-btns"><button class="arrow-btn" id="prev-day" type="button" aria-label="Dia anterior">‹</button><button class="arrow-btn" id="next-day" type="button" aria-label="Próximo dia">›</button><button class="today-btn" id="today-btn" type="button">Hoje</button></div><div class="date-current"><strong id="selected-date">22 de setembro de 2026</strong><span>Grade de consultorias do dia</span></div><label class="availability-date-picker" for="board-date"><span>Ir para uma data</span><input id="board-date" type="date" aria-label="Escolher uma data no calendário" /></label></div>
+</section>
+<section class="toolbar" data-od-id="filtros-organograma" aria-label="Busca e filtros">
+<label class="search" data-od-id="busca-organograma"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="campo-busca" type="search" placeholder="Buscar por cliente ou telefone…" aria-label="Buscar por cliente ou telefone" /></label>
+<div class="field"><label for="f-closer">Closer</label><select class="select" id="f-closer" data-od-id="filtro-closer"><option value="todos">Todos os closers</option><option value="Rafael Lima">Rafael Lima</option><option value="Camila Sousa">Camila Sousa</option><option value="Thiago Abreu">Thiago Abreu</option></select></div>
+<div class="field"><label for="f-situacao">Situação</label><select class="select" id="f-situacao" data-od-id="filtro-situacao"><option value="todas">Todas as situações</option><option value="agendada">Agendada</option><option value="acontecendo">Acontecendo</option><option value="compareceu">Compareceu</option><option value="no-show">No-show</option><option value="cancelada">Cancelada</option></select></div>
+<div class="field"><label for="f-confirm">Confirmação</label><select class="select" id="f-confirm" data-od-id="filtro-confirmacao"><option value="todas">Todas</option><option value="confirmada">Confirmada</option><option value="aguardando">Aguardando</option><option value="sem-retorno">Sem retorno</option></select></div>
+</section>
+<section data-od-id="kanban" aria-label="Kanban de consultorias">
+<div class="kanban-wrap"><div class="kanban" id="kanban">
+<div class="col" data-col="agendada" data-od-id="coluna-agendadas"><div class="col-head"><span class="col-dot" style="background:var(--muted)" aria-hidden="true"></span><span class="col-title">Agendadas</span><span class="col-count">7</span></div>
+<article class="kcard" draggable="true" data-od-id="card-marina" data-closer="Rafael Lima" data-confirm="confirmada" data-search="marina duarte 14:30 (11) 98744-2010"><div class="kcard-top"><span class="ktime">14:30 <small>· 30 min</small></span><span class="badge badge-success"><span class="badge-dot"></span>Confirmada</span></div><div class="kclient">Marina Duarte</div><div class="kmeta"><strong>Rafael Lima</strong> · Meet Sala 03</div><div class="kphone">(11) 98744-2010</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(11) 98744-2010"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="meet">Google Meet</button><button class="kbtn" type="button" data-act="details" data-client="Marina Duarte">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="acontecendo">Mover para Acontecendo</button><button type="button" data-move="compareceu">Marcar compareceu</button><button type="button" data-move="no-show">Marcar no-show</button><button type="button" data-move="cancelada">Cancelar</button><button type="button" data-move="reagendar">Mover para Reagendar</button></span></span></div></article>
+<article class="kcard" draggable="true" data-od-id="card-joao" data-closer="Camila Sousa" data-confirm="confirmada" data-search="joão pedro freitas 15:00 (11) 97612-8840"><div class="kcard-top"><span class="ktime">15:00 <small>· 30 min</small></span><span class="badge badge-success"><span class="badge-dot"></span>Confirmada</span></div><div class="kclient">João Pedro Freitas</div><div class="kmeta"><strong>Camila Sousa</strong> · Presencial Sala 01</div><div class="kphone">(11) 97612-8840</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(11) 97612-8840"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="meet">Google Meet</button><button class="kbtn" type="button" data-act="details" data-client="João Pedro Freitas">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="acontecendo">Mover para Acontecendo</button><button type="button" data-move="compareceu">Marcar compareceu</button><button type="button" data-move="no-show">Marcar no-show</button><button type="button" data-move="cancelada">Cancelar</button><button type="button" data-move="reagendar">Mover para Reagendar</button></span></span></div></article>
+<article class="kcard" draggable="true" data-od-id="card-beatriz" data-closer="Rafael Lima" data-confirm="aguardando" data-search="beatriz nogueira 15:30 (11) 96530-1127"><div class="kcard-top"><span class="ktime">15:30 <small>· 30 min</small></span><span class="badge badge-warn"><span class="badge-dot"></span>Aguardando</span></div><div class="kclient">Beatriz Nogueira</div><div class="kmeta"><strong>Rafael Lima</strong> · Meet Sala 03</div><div class="kphone">(11) 96530-1127</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(11) 96530-1127"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="meet">Google Meet</button><button class="kbtn" type="button" data-act="details" data-client="Beatriz Nogueira">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="acontecendo">Mover para Acontecendo</button><button type="button" data-move="compareceu">Marcar compareceu</button><button type="button" data-move="no-show">Marcar no-show</button><button type="button" data-move="cancelada">Cancelar</button><button type="button" data-move="reagendar">Mover para Reagendar</button></span></span></div></article>
+<article class="kcard" draggable="true" data-od-id="card-carlos" data-closer="Thiago Abreu" data-confirm="confirmada" data-search="carlos mota 16:30 (19) 99820-4451"><div class="kcard-top"><span class="ktime">16:30 <small>· 45 min</small></span><span class="badge badge-success"><span class="badge-dot"></span>Confirmada</span></div><div class="kclient">Carlos Mota</div><div class="kmeta"><strong>Thiago Abreu</strong> · Meet Sala 02</div><div class="kphone">(19) 99820-4451</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(19) 99820-4451"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="meet">Google Meet</button><button class="kbtn" type="button" data-act="details" data-client="Carlos Mota">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="acontecendo">Mover para Acontecendo</button><button type="button" data-move="compareceu">Marcar compareceu</button><button type="button" data-move="no-show">Marcar no-show</button><button type="button" data-move="cancelada">Cancelar</button><button type="button" data-move="reagendar">Mover para Reagendar</button></span></span></div></article>
+<article class="kcard" draggable="true" data-od-id="card-fernanda" data-closer="Camila Sousa" data-confirm="aguardando" data-search="fernanda lins 17:15 (11) 99402-7736"><div class="kcard-top"><span class="ktime">17:15 <small>· 30 min</small></span><span class="badge badge-warn"><span class="badge-dot"></span>Aguardando</span></div><div class="kclient">Fernanda Lins</div><div class="kmeta"><strong>Camila Sousa</strong> · Meet Sala 01</div><div class="kphone">(11) 99402-7736</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(11) 99402-7736"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="meet">Google Meet</button><button class="kbtn" type="button" data-act="details" data-client="Fernanda Lins">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="acontecendo">Mover para Acontecendo</button><button type="button" data-move="compareceu">Marcar compareceu</button><button type="button" data-move="no-show">Marcar no-show</button><button type="button" data-move="cancelada">Cancelar</button><button type="button" data-move="reagendar">Mover para Reagendar</button></span></span></div></article>
+<article class="kcard" draggable="true" data-od-id="card-paulo" data-closer="Thiago Abreu" data-confirm="sem-retorno" data-search="paulo henrique 18:00 (31) 98710-5520"><div class="kcard-top"><span class="ktime">18:00 <small>· 30 min</small></span><span class="badge badge-muted">Sem retorno</span></div><div class="kclient">Paulo Henrique</div><div class="kmeta"><strong>Thiago Abreu</strong> · Meet Sala 02</div><div class="kphone">(31) 98710-5520</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(31) 98710-5520"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="meet">Google Meet</button><button class="kbtn" type="button" data-act="details" data-client="Paulo Henrique">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="acontecendo">Mover para Acontecendo</button><button type="button" data-move="compareceu">Marcar compareceu</button><button type="button" data-move="no-show">Marcar no-show</button><button type="button" data-move="cancelada">Cancelar</button><button type="button" data-move="reagendar">Mover para Reagendar</button></span></span></div></article>
+<article class="kcard" draggable="true" data-od-id="card-tatiane" data-closer="Rafael Lima" data-confirm="confirmada" data-search="tatiane rocha 18:30 (11) 98155-0093"><div class="kcard-top"><span class="ktime">18:30 <small>· 30 min</small></span><span class="badge badge-success"><span class="badge-dot"></span>Confirmada</span></div><div class="kclient">Tatiane Rocha</div><div class="kmeta"><strong>Rafael Lima</strong> · Presencial Sala 02</div><div class="kphone">(11) 98155-0093</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(11) 98155-0093"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="meet">Google Meet</button><button class="kbtn" type="button" data-act="details" data-client="Tatiane Rocha">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="acontecendo">Mover para Acontecendo</button><button type="button" data-move="compareceu">Marcar compareceu</button><button type="button" data-move="no-show">Marcar no-show</button><button type="button" data-move="cancelada">Cancelar</button><button type="button" data-move="reagendar">Mover para Reagendar</button></span></span></div></article>
+<div class="col-empty">Nenhum card neste filtro.</div></div>
+<div class="col" data-col="acontecendo" data-od-id="coluna-acontecendo"><div class="col-head"><span class="col-dot" style="background:var(--accent)" aria-hidden="true"></span><span class="col-title">Acontecendo</span><span class="col-count">1</span></div>
+<article class="kcard live" draggable="true" data-od-id="card-patricia" data-closer="Rafael Lima" data-confirm="confirmada" data-search="patrícia gomes 13:50 (11) 99981-2234"><div class="live-line"><span class="pulse" aria-hidden="true"></span>AO VIVO AGORA · termina 14:20</div><div class="kcard-top"><span class="ktime">13:50 <small>· 30 min</small></span><span class="badge badge-accent"><span class="badge-dot"></span>Em sessão</span></div><div class="kclient">Patrícia Gomes</div><div class="kmeta"><strong>Rafael Lima</strong> · Meet Sala 03 · check-in 13:52</div><div class="kphone">(11) 99981-2234</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(11) 99981-2234"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="meet">Google Meet</button><button class="kbtn" type="button" data-act="details" data-client="Patrícia Gomes">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="compareceu">Encerrar · compareceu</button><button type="button" data-move="no-show">Encerrar · no-show</button><button type="button" data-move="agendada">Voltar para Agendadas</button></span></span></div></article>
+<div class="col-empty">Nenhum card neste filtro.</div></div>
+<div class="col" data-col="compareceu" data-od-id="coluna-compareceu"><div class="col-head"><span class="col-dot" style="background:var(--success)" aria-hidden="true"></span><span class="col-title">Compareceu</span><span class="col-count">4</span></div>
+<article class="kcard" draggable="true" data-od-id="card-camila-m" data-closer="Camila Sousa" data-confirm="confirmada" data-search="camila moraes 09:00 (11) 98321-4470"><div class="kcard-top"><span class="ktime">09:00 <small>· 30 min</small></span><span class="badge badge-success"><span class="badge-dot"></span>Compareceu</span></div><div class="kclient">Camila Moraes</div><div class="kmeta"><strong>Camila Sousa</strong> · Presencial Sala 01</div><div class="kphone">(11) 98321-4470</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(11) 98321-4470"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="details" data-client="Camila Moraes">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="agendada">Reabrir</button><button type="button" data-move="no-show">Corrigir p/ no-show</button></span></span></div></article>
+<article class="kcard" draggable="true" data-od-id="card-diego-a" data-closer="Thiago Abreu" data-confirm="confirmada" data-search="diego almeida 09:40 (21) 98877-1023"><div class="kcard-top"><span class="ktime">09:40 <small>· 30 min</small></span><span class="badge badge-success"><span class="badge-dot"></span>Compareceu</span></div><div class="kclient">Diego Almeida</div><div class="kmeta"><strong>Thiago Abreu</strong> · Meet Sala 02</div><div class="kphone">(21) 98877-1023</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(21) 98877-1023"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="details" data-client="Diego Almeida">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="agendada">Reabrir</button></span></span></div></article>
+<article class="kcard" draggable="true" data-od-id="card-larissa" data-closer="Rafael Lima" data-confirm="confirmada" data-search="larissa campos 11:00 (11) 97766-3390"><div class="kcard-top"><span class="ktime">11:00 <small>· 30 min</small></span><span class="badge badge-success"><span class="badge-dot"></span>Compareceu</span></div><div class="kclient">Larissa Campos</div><div class="kmeta"><strong>Rafael Lima</strong> · Meet Sala 03</div><div class="kphone">(11) 97766-3390</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(11) 97766-3390"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="details" data-client="Larissa Campos">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="agendada">Reabrir</button></span></span></div></article>
+<article class="kcard" draggable="true" data-od-id="card-sergio" data-closer="Camila Sousa" data-confirm="confirmada" data-search="sérgio nunes 12:30 (11) 97245-9018"><div class="kcard-top"><span class="ktime">12:30 <small>· 30 min</small></span><span class="badge badge-success"><span class="badge-dot"></span>Compareceu</span></div><div class="kclient">Sérgio Nunes</div><div class="kmeta"><strong>Camila Sousa</strong> · Presencial Sala 01</div><div class="kphone">(11) 97245-9018</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(11) 97245-9018"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="details" data-client="Sérgio Nunes">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="agendada">Reabrir</button></span></span></div></article>
+<div class="col-empty">Nenhum card neste filtro.</div></div>
+<div class="col" data-col="no-show" data-od-id="coluna-noshow"><div class="col-head"><span class="col-dot" style="background:var(--danger)" aria-hidden="true"></span><span class="col-title">No-show</span><span class="col-count">2</span></div>
+<article class="kcard" draggable="true" data-od-id="card-roberto" data-closer="Thiago Abreu" data-confirm="sem-retorno" data-search="roberto farias 10:30 (31) 99654-1188"><div class="kcard-top"><span class="ktime">10:30 <small>· 30 min</small></span><span class="badge badge-danger"><span class="badge-dot"></span>No-show</span></div><div class="kclient">Roberto Farias</div><div class="kmeta"><strong>Thiago Abreu</strong> · Meet Sala 02 · sem entrada</div><div class="kphone">(31) 99654-1188</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(31) 99654-1188"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="details" data-client="Roberto Farias">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="reagendar">Retomar · reagendar</button><button type="button" data-move="compareceu">Corrigir p/ compareceu</button></span></span></div></article>
+<article class="kcard" draggable="true" data-od-id="card-juliana" data-closer="Camila Sousa" data-confirm="aguardando" data-search="juliana castro 13:00 (11) 96890-2245"><div class="kcard-top"><span class="ktime">13:00 <small>· 30 min</small></span><span class="badge badge-danger"><span class="badge-dot"></span>No-show</span></div><div class="kclient">Juliana Castro</div><div class="kmeta"><strong>Camila Sousa</strong> · Meet Sala 01 · entrou e saiu</div><div class="kphone">(11) 96890-2245</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(11) 96890-2245"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="details" data-client="Juliana Castro">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="reagendar">Retomar · reagendar</button></span></span></div></article>
+<div class="col-empty">Nenhum card neste filtro.</div></div>
+<div class="col" data-col="cancelada" data-od-id="coluna-canceladas"><div class="col-head"><span class="col-dot" style="background:var(--fg)" aria-hidden="true"></span><span class="col-title">Canceladas</span><span class="col-count">2</span></div>
+<article class="kcard" draggable="true" data-od-id="card-bruno" data-closer="Rafael Lima" data-confirm="sem-retorno" data-search="bruno sales 10:00 (11) 99120-6674"><div class="kcard-top"><span class="ktime">10:00 <small>· 30 min</small></span><span class="badge badge-muted">Cancelada</span></div><div class="kclient">Bruno Sales</div><div class="kmeta"><strong>Rafael Lima</strong> · cancelou via WhatsApp</div><div class="kphone">(11) 99120-6674</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(11) 99120-6674"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="details" data-client="Bruno Sales">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="reagendar">Reagendar</button><button type="button" data-move="agendada">Reativar</button></span></span></div></article>
+<article class="kcard" draggable="true" data-od-id="card-elaine" data-closer="Camila Sousa" data-confirm="aguardando" data-search="elaine pires 11:30 (11) 97501-3382"><div class="kcard-top"><span class="ktime">11:30 <small>· 30 min</small></span><span class="badge badge-muted">Cancelada</span></div><div class="kclient">Elaine Pires</div><div class="kmeta"><strong>Camila Sousa</strong> · pediu nova data</div><div class="kphone">(11) 97501-3382</div><div class="k-actions"><button class="kbtn" type="button" data-act="copy" data-phone="(11) 97501-3382"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copiar telefone</button><button class="kbtn" type="button" data-act="details" data-client="Elaine Pires">Detalhes</button><span class="kmenu-wrap"><button class="kbtn" type="button" data-act="menu" aria-label="Mais opções">···</button><span class="menu"><button type="button" data-move="reagendar">Reagendar</button></span></span></div></article>
+<div class="col-empty">Nenhum card neste filtro.</div></div>
+</div></div>
+</section>
+<footer class="pagefoot" data-od-id="rodape"><span><a href="inicio.html" data-od-id="voltar-inicio">← Voltar ao Início</a> · © HOD Hub · Operação interna</span><span class="meta">Fonte: Google Agenda · protótipo navegável · Organograma v1</span></footer>
+</main>
+</div>
+<div class="modal-back" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal"><h2 id="modal-title">Detalhes</h2><p class="meta" id="modal-sub">Ficha da consultoria</p><div class="detail-grid"><div><span>Cliente</span><strong id="d-cliente">—</strong></div><div><span>Horário</span><strong id="d-hora">—</strong></div><div><span>Closer</span><strong id="d-closer">—</strong></div><div><span>Telefone</span><strong id="d-fone">—</strong></div></div><p style="font-size:14px;color:var(--muted)" id="d-obs">Histórico de confirmação e observações da operação aparecem aqui nesta demonstração.</p><div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap"><button class="btn btn-secondary" type="button" id="modal-close">Fechar</button><button class="btn btn-primary" type="button" id="modal-meet">Abrir Google Meet</button></div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="/src/neutral-main.js"></script>
+</body>
+</html>

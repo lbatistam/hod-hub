@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Entre no HOD Hub e conecte sua operação ao Google Agenda.">
+  <title>Entrar | HOD Hub (Web App)</title>
+  <link rel="icon" href="../images/hod-hub-app-icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="../images/hod-hub-icon-192.png">
+  <script type="module" src="/src/main.js"></script>
+</head>
+<body data-page="hod-login">
+  <main class="hod-login-page">
+    <section class="hod-login-visual">
+      <div class="hod-brand">
+        <img class="hod-brand-symbol" src="../images/hod-hub-mark-black.svg" alt="">
+        <div><strong>HOD Hub (Web App)</strong><small>Gestão de Consultorias</small></div>
+      </div>
+      <h1>Sua operação comercial, organizada em um só lugar.</h1>
+      <p>Calendários, consultorias, closers e indicadores em tempo real.</p>
+    </section>
+    <section class="hod-login-panel">
+      <div class="hod-login-card">
+        <span class="hod-brand-lockup hod-login-logo" aria-label="HOD Hub"><img class="hod-brand-mark" src="../images/hod-hub-mark-black.svg" alt=""><span class="hod-brand-name"><strong>HOD</strong><span>Hub</span></span></span>
+        <h2>Bem-vindo ao HOD Hub</h2>
+        <p>Entre com sua conta Google para acessar o painel e conectar seu Google Agenda.</p>
+        <a class="hod-google-button" href="http://localhost:8877/api/v1/auth/google?return_to=http%3A%2F%2Flocalhost%3A8787%2Fproduction%2Finicio.html">Entrar com Google</a>
+        <div class="hod-login-note">Novas contas ficam aguardando aprovação de um administrador.</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [app, api]
+    defaults:
+      run:
+        working-directory: ${{ matrix.project }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: ${{ matrix.project }}/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - if: matrix.project == 'app'
+        run: pnpm run lint && pnpm test && pnpm run build && pnpm run smoke
+      - if: matrix.project == 'api'
+        run: pnpm run typecheck && pnpm test && pnpm run build
+

@@ -1,0 +1,427 @@
+// Kanban próprio do HOD Hub.
+// Componente isolado para a operação diária.
+// Tipografia padronizada: pilha do sistema (mesma dos demais apps HOD Hub).
+
+:root:root body[data-page="hod-organograma"] {
+  --sloth-ink: #1e293b;
+  --sloth-copy: #475569;
+  --sloth-muted: #94a3b8;
+  --sloth-line: #e2e8f0;
+  --sloth-gutter: #f8fafc;
+  --sloth-card: #fff;
+  --sloth-indigo: #4f46e5;
+  --sloth-shadow: 0 4px 8px -2px rgba(23, 23, 23, 0.1), 0 2px 4px -2px rgba(23, 23, 23, 0.06);
+}
+
+:root:root body[data-page="hod-organograma"] .hod-page-main {
+  background: #fff;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-kanban {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+  padding: 8px 2px 28px;
+  overflow-x: hidden;
+  font-family: var(--font);
+  scrollbar-gutter: stable;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-kanban-column {
+  --column-accent: var(--sloth-indigo);
+  align-self: start;
+  min-height: 260px;
+  min-width: 0;
+  padding: 9px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 24px;
+  background: var(--sloth-gutter);
+  box-shadow: none;
+}
+
+:root:root body[data-page="hod-organograma"] [data-kanban-state="andamento"] {
+  --column-accent: #2563eb;
+}
+:root:root body[data-page="hod-organograma"] [data-kanban-state="concluidas"] {
+  --column-accent: #22c55e;
+}
+:root:root body[data-page="hod-organograma"] [data-kanban-state="no_show"] {
+  --column-accent: #f59e0b;
+}
+:root:root body[data-page="hod-organograma"] [data-kanban-state="cancelada"] {
+  --column-accent: #ef4444;
+}
+:root:root body[data-page="hod-organograma"] [data-kanban-state="reagendar"] {
+  --column-accent: #8b5cf6;
+}
+:root:root body[data-page="hod-organograma"] [data-kanban-state="reagendado"] {
+  --column-accent: #111827;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-confirmation-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 2px 18px;
+  padding: 13px 16px;
+  border: 1px solid var(--hod-line);
+  border-radius: 18px;
+  background: var(--hod-card);
+  box-shadow: var(--hod-shadow);
+}
+:root:root body[data-page="hod-organograma"] .hod-confirmation-filter > div:first-child {
+  display: grid;
+  gap: 2px;
+}
+:root:root body[data-page="hod-organograma"] .hod-confirmation-filter > div:first-child strong {
+  color: var(--hod-text);
+  font-size: 14px;
+}
+:root:root body[data-page="hod-organograma"] .hod-confirmation-segments {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px;
+  border: 1px solid var(--hod-line);
+  border-radius: 999px;
+  background: var(--hod-soft);
+}
+:root:root body[data-page="hod-organograma"] .hod-confirmation-segments button {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--hod-muted);
+  background: transparent;
+  cursor: pointer;
+  font: 600 11px var(--hod-font);
+}
+:root:root body[data-page="hod-organograma"] .hod-confirmation-segments button b {
+  display: grid;
+  min-width: 23px;
+  height: 23px;
+  place-items: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  color: var(--hod-muted);
+  background: var(--hod-card-solid);
+  font-size: 10px;
+}
+:root:root body[data-page="hod-organograma"] .hod-confirmation-segments button.active {
+  color: var(--hod-on-accent);
+  background: var(--hod-user-accent-effective);
+  box-shadow: 0 7px 18px color-mix(in srgb, var(--hod-user-accent-effective) 18%, transparent);
+}
+:root:root body[data-page="hod-organograma"] .hod-confirmation-segments button.active b {
+  color: var(--hod-user-accent-effective);
+  background: var(--hod-card-solid);
+}
+
+@media (max-width: 860px) {
+  :root:root body[data-page="hod-organograma"] .hod-confirmation-filter {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  :root:root body[data-page="hod-organograma"] .hod-confirmation-segments {
+    width: 100%;
+    overflow-x: auto;
+  }
+  :root:root body[data-page="hod-organograma"] .hod-confirmation-segments button {
+    flex: 0 0 auto;
+  }
+}
+
+:root:root body[data-page="hod-organograma"] .hod-kanban-title {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 16px;
+  padding: 7px 9px 7px 7px;
+  border: 0;
+  border-radius: 9999px;
+  color: #fff;
+  background: var(--column-accent);
+  box-shadow: none;
+  font-size: 13px;
+  line-height: 22px;
+  isolation: isolate;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-kanban-title strong {
+  min-width: 0;
+  flex: 1;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.112px;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-kanban-title .hod-kanban-count {
+  display: grid;
+  min-width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0 8px;
+  border: 0 !important;
+  border-radius: 9999px !important;
+  color: var(--column-accent) !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 20px;
+  letter-spacing: -0.084px;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-kanban-title > i {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  margin-left: auto;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-kanban-title > i::before,
+:root:root body[data-page="hod-organograma"] .hod-kanban-title > i::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 19px;
+  height: 2px;
+  border-radius: 999px;
+  background: #fff;
+  content: "";
+  transform: translate(-50%, -50%);
+}
+
+:root:root body[data-page="hod-organograma"] .hod-kanban-title > i::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+:root:root body[data-page="hod-organograma"] .hod-kanban-cards {
+  display: flex;
+  min-height: 180px;
+  flex-direction: column;
+  gap: 12px;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-kanban-column.is-drop-target {
+  outline: 2px solid color-mix(in srgb, var(--sloth-indigo) 48%, transparent);
+  outline-offset: 3px;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-kanban-column.is-drop-target .hod-kanban-cards {
+  background: color-mix(in srgb, var(--sloth-indigo) 7%, transparent);
+}
+
+:root:root body[data-page="hod-organograma"] .hod-meeting-card {
+  margin: 0;
+  padding: 12px;
+  overflow: hidden;
+  border: 1px solid var(--sloth-line);
+  border-left: 1px solid var(--sloth-line);
+  border-radius: 24px;
+  color: var(--sloth-ink);
+  background: var(--sloth-card);
+  box-shadow: var(--sloth-shadow);
+  font-family: var(--font);
+  cursor: grab;
+  transition:
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-meeting-card::before {
+  display: none;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-meeting-card:hover {
+  border-color: color-mix(in srgb, var(--closer, var(--sloth-indigo)) 32%, var(--sloth-line));
+  box-shadow:
+    0 12px 24px -10px rgba(23, 23, 23, 0.24),
+    0 4px 8px -4px rgba(23, 23, 23, 0.09);
+  transform: translateY(-2px);
+}
+
+:root:root body[data-page="hod-organograma"] .hod-meeting-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-meeting-time {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  color: var(--sloth-indigo);
+  background: #eef2ff;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 18px;
+  letter-spacing: -0.06px;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-closer-tag {
+  max-width: 65%;
+  padding: 4px 9px;
+  border: 0;
+  border-radius: 9999px;
+  color: var(--tag-color, var(--closer, var(--sloth-indigo)));
+  background: color-mix(in srgb, var(--tag-color, var(--closer, var(--sloth-indigo))) 11%, #fff);
+  box-shadow: none;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: -0.03px;
+  line-height: 18px;
+  text-transform: none;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-closer-tag.hod-over {
+  color: #fff;
+  background: #171717;
+  box-shadow: none;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-meeting-card h3 {
+  margin-top: 13px;
+  color: var(--sloth-ink);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+  letter-spacing: -0.112px;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-meeting-card p {
+  margin-top: 7px;
+  color: var(--sloth-copy);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-card-alert {
+  margin-top: 10px;
+  border-radius: 12px;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-confirmation-confirm,
+:root:root body[data-page="hod-organograma"] .hod-confirmation-decline,
+:root:root body[data-page="hod-organograma"] .hod-inline-action {
+  min-height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--sloth-line);
+  border-radius: 9999px;
+  color: var(--sloth-copy);
+  background: #fff;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-confirmation-confirm.active {
+  border-color: #bbf7d0;
+  color: #15803d;
+  background: #f0fdf4;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-confirmation-decline.active {
+  border-color: #fecdd3;
+  color: #e11d48;
+  background: #fff1f2;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-card-state {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+  padding-top: 0;
+  border: 0;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-card-state span {
+  padding: 4px 9px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 18px;
+}
+
+:root:root body[data-page="hod-organograma"] .hod-empty-state {
+  min-height: 150px;
+  padding: 24px 18px;
+  border: 1px solid var(--sloth-line);
+  border-radius: 24px;
+  color: var(--sloth-copy);
+  background: var(--sloth-card);
+  box-shadow: var(--sloth-shadow);
+}
+
+[data-theme="dark"]:root:root body[data-page="hod-organograma"] {
+  --sloth-ink: #f8fafc;
+  --sloth-copy: #cbd5e1;
+  --sloth-muted: #94a3b8;
+  --sloth-line: rgba(255, 255, 255, 0.1);
+  --sloth-gutter: #111827;
+  --sloth-card: #171d26;
+  --sloth-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.42);
+}
+
+[data-theme="dark"]:root:root body[data-page="hod-organograma"] .hod-page-main {
+  background: #0f131a;
+}
+
+[data-theme="dark"]:root:root body[data-page="hod-organograma"] .hod-meeting-time {
+  color: #a5b4fc;
+  background: rgba(79, 70, 229, 0.18);
+}
+
+[data-theme="dark"]:root:root body[data-page="hod-organograma"] .hod-closer-tag {
+  color: color-mix(in srgb, var(--tag-color, #a5b4fc) 62%, #fff);
+  background: color-mix(in srgb, var(--tag-color, #4f46e5) 20%, #171d26);
+}
+
+[data-theme="dark"]:root:root body[data-page="hod-organograma"] .hod-card-actions {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"]:root:root body[data-page="hod-organograma"] .hod-confirmation-confirm,
+[data-theme="dark"]:root:root body[data-page="hod-organograma"] .hod-confirmation-decline,
+[data-theme="dark"]:root:root body[data-page="hod-organograma"] .hod-inline-action {
+  color: var(--sloth-copy);
+  background: #171d26;
+}
+
+@media (max-width: 760px) {
+  :root:root body[data-page="hod-organograma"] .hod-kanban {
+    grid-template-columns: repeat(6, minmax(320px, 1fr));
+    overflow-x: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:root body[data-page="hod-organograma"] .hod-meeting-card {
+    transition: none;
+  }
+}

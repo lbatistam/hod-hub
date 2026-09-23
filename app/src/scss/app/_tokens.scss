@@ -1,0 +1,63 @@
+// HOD Hub — base global compartilhada pelas páginas operacionais.
+
+:root {
+  --font: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --hod-page-background: #f3f5f9;
+  --hod-page-text: #222326;
+}
+
+// Dark theme — applied via `<html data-theme="dark">`. The pre-paint script
+// in vite.config.js reads localStorage('theme') / prefers-color-scheme and
+// sets this attribute before <body> renders so dark mode never flashes.
+[data-theme="dark"] {
+  --hod-page-background: #0f131a;
+  --hod-page-text: #f5f7fb;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--hod-page-text);
+  background: var(--hod-page-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+// Inline SVG icons in HTML pages don't always have width/height attributes.
+// Without them, browsers render unsized SVGs at the default 300×150 — which
+// causes a giant-icon flash during navigation in dev (CSS injected via JS)
+// and on slow networks. Default unsized SVGs to 1em so they render close to
+// their final size on first paint. Specific .icon / .tb-btn svg / etc. rules
+// have higher specificity and override this.
+// :where() keeps the rule but drops it to 0-specificity so any class-based
+// override (.icon-cell svg, .feature .icon svg, etc.) wins cleanly.
+:where(svg):not([width]):not([height]) {
+  width: 1em;
+  height: 1em;
+}

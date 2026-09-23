@@ -1,0 +1,22 @@
+name: Bug
+description: Relate um comportamento reproduzível
+body:
+  - type: textarea
+    attributes:
+      label: Comportamento atual
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Comportamento esperado
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Como reproduzir
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Evidências anonimizadas
+

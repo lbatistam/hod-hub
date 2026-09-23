@@ -1,0 +1,123 @@
+// HOD Hub — entrada única do design system.
+
+@use "tokens";
+@use "foundation";
+@use "pages";
+@use "shell";
+@use "kanban";
+
+.hod-global-sync {
+  position: fixed;
+  z-index: 110;
+  right: 22px;
+  bottom: 22px;
+  width: min(286px, calc(100vw - 28px));
+  padding: 12px 14px 13px;
+  overflow: hidden;
+  color: var(--hod-text, #15171b);
+  border: 1px solid var(--hod-line, #e3e7ed);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--hod-card, #ffffff) 94%, transparent);
+  box-shadow: 0 16px 44px rgba(20, 27, 39, 0.16);
+  backdrop-filter: blur(18px);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(8px) scale(0.985);
+  transition:
+    opacity 160ms ease,
+    transform 180ms ease;
+}
+
+.hod-global-sync[hidden] {
+  display: none;
+}
+.hod-global-sync.visible {
+  opacity: 1;
+  transform: none;
+}
+.hod-global-sync-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+.hod-global-sync-head > i {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--hod-user-accent-effective, #111111);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--hod-user-accent-effective, #111111) 12%, transparent);
+}
+.hod-global-sync-track {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--hod-line, #e3e7ed) 72%, transparent);
+}
+.hod-global-sync-track > i {
+  display: block;
+  width: 44%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, var(--hod-user-accent-effective, #111111), #39c998, transparent);
+  transform: translateX(-110%);
+  animation: hod-sync-track 1.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+.hod-global-sync[data-state="complete"] .hod-global-sync-head > i {
+  background: #19a66a;
+  box-shadow: 0 0 0 4px rgba(25, 166, 106, 0.13);
+}
+.hod-global-sync[data-state="complete"] .hod-global-sync-track > i {
+  width: 100%;
+  background: #19a66a;
+  transform: none;
+  animation: none;
+}
+.hod-is-syncing .hod-date-input,
+.hod-is-syncing .hod-date-button {
+  cursor: progress;
+}
+
+.hod-control.is-loading,
+.hod-action.is-loading,
+.hod-notification-actions button.is-loading {
+  cursor: progress;
+  opacity: 0.72;
+}
+
+[data-theme="dark"] body[data-page^="hod-"] .hod-nav-item.active {
+  color: var(--hod-on-accent);
+}
+
+@keyframes hod-sync-track {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(330%);
+  }
+}
+
+@media (max-width: 980px) {
+  .hod-global-sync {
+    right: 14px;
+    bottom: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hod-global-sync {
+    transition: none;
+  }
+  .hod-global-sync-track > i {
+    width: 66%;
+    animation: none;
+    opacity: 0.7;
+    transform: none;
+  }
+}

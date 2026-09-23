@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Início · HOD Hub</title>
+<style>
+:root {
+  /* ─── Surface (3 levels — #Gap 2) ─────────────────────────────────
+   * Per craft/color.md: never pure black, never pure white. Default
+   * uses #FAFAFA for bg and #FFFFFF for surface — the cream-to-white
+   * contrast gives cards lift without a shadow. `--surface-warm` is a
+   * schema slot for brands that need a tertiary tier (kami's warm-sand
+   * button bg); default has no third tier and aliases it to surface. */
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-warm: var(--surface);   /* alias — default has no warm tier */
+
+  /* ─── Foreground ramp (4 levels — #Gap 1) ───────────────────────
+   * Default differentiates only two text levels (primary + muted).
+   * `--fg-2` and `--meta` are schema slots for brands with richer
+   * ramps (kami uses near-black / dark-warm / olive / stone). They
+   * alias here so components targeting the full ramp resolve. */
+  --fg: #111111;
+  --fg-2: var(--fg);                /* alias — default has no secondary tier */
+  --muted: #6b6b6b;
+  --meta: var(--muted);             /* alias — default has no metadata tier */
+
+  /* ─── Border (2 levels — #Gap 3) ────────────────────────────────
+   * Default has one border weight; `--border-soft` is a schema slot
+   * for brands with row-separator vs card-edge differentiation. */
+  --border: #e5e5e5;
+  --border-soft: var(--border);     /* alias — default has no soft tier */
+
+  /* ─── Accent ──────────────────────────────────────────────────────
+   * Cobalt — primary CTAs, links, ONE hero element per screen.
+   * Hard cap of 2 visible uses per screen is enforced by lint
+   * (`accent-overuse` P1 fires at >6 inline occurrences). */
+  --accent: #2f6feb;
+  --accent-on: #ffffff; /* fg when accent is the bg (e.g. button label) */
+
+  /* ─── Accent states (#Gap 4) ────────────────────────────────────
+   * Hover and active variants for any element using --accent as bg.
+   * Default's mid-luminance cobalt admits a black-mix formula
+   * cleanly; that's a brand-specific binding, NOT a schema rule.
+   * kami binds --accent-hover to var(--accent) (no color shift,
+   * hover via elevation) because ink-blue is too dark for further
+   * darkening to read; other brands with light accents must
+   * hand-pick.
+   *
+   * Schema rule: every brand provides --accent-hover and
+   * --accent-active. The binding strategy (formula / identity /
+   * hand-picked) is brand-decided.
+   *
+   * Why these two are tokens (and other tints stay inline):
+   *   - cross-component (button, chip, tab, dropdown all need them)
+   *   - cross-mode reversal (dark-mode hover should mix white, not
+   *     black — token re-binding is one line per mode)
+   *   - cross-brand customization (formula breaks on light accents)
+   *   - lint-enforceable contract (every brand must provide these)
+   * Other inline `color-mix(...)` calls in components don't yet hit
+   * any of the above — promote them to tokens when a second use
+   * appears. */
+  --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+  --accent-active: color-mix(in oklab, var(--accent), black 14%);
+
+  /* ─── Semantic ────────────────────────────────────────────────────
+   * Reserved for state, not decoration. Keep total semantic-color
+   * pixels under 5% of the surface. */
+  --success: #17a34a;
+  --warn: #eab308;
+  --danger: #dc2626;
+
+  /* ─── Typography ──────────────────────────────────────────────────
+   * Inter for display is the documented "modern minimal" override
+   * to anti-ai-slop's serif-display rule (see DESIGN.md
+   * §Visual Theme & Atmosphere — "Calm, functional, quietly
+   * confident"). Other brands should rebind --font-display to a
+   * serif unless their direction is also tech/utility. */
+  --font-display: "Inter", -apple-system, system-ui, sans-serif;
+  --font-body: "Inter", -apple-system, system-ui, sans-serif;
+  --font-mono: "Inter", -apple-system, system-ui, sans-serif;
+
+  /* Type scale (px) — direct copy of DESIGN.md §Typography Rules */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+  --text-3xl: 48px;
+  --text-4xl: 64px;
+
+  --leading-body: 1.5;
+  --leading-tight: 1.2;
+  --tracking-display: -0.01em; /* applied to display sizes ≥32px */
+
+  /* ─── Spacing ─────────────────────────────────────────────────────
+   * 4px base unit. Section rhythm (80/48/32) lives below as named
+   * tokens because DESIGN.md §Layout Principles treats them as
+   * breakpoint-specific decisions, not generic spacing. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-20: 80px;
+
+  --section-y-desktop: 80px;
+  --section-y-tablet: 48px;
+  --section-y-phone: 32px;
+
+  /* ─── Radius ──────────────────────────────────────────────────────
+   * Two intents: small (button/input) and medium (card/modal).
+   * `--radius-pill` reserved for chips/avatars; do not use it on
+   * cards or buttons. */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+
+  /* ─── Elevation (3 levels — #Gap 5) ─────────────────────────────
+   * Default uses two levels (flat + raised blur shadow) per its own
+   * DESIGN.md §Depth & Elevation. The schema gains `--elev-ring` as
+   * a first-class level so brands using ring shadows as primary
+   * elevation (kami, paper, editorial) don't need to rebind
+   * --elev-raised away from blur. Default declares all three; ring
+   * is available for hairline edges where a 1px border would shift
+   * layout. No fourth level — that's neumorphism territory. */
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 2px 8px color-mix(in oklab, var(--fg), transparent 92%);
+
+  /* ─── Focus ring ──────────────────────────────────────────────────
+   * Single source of truth for keyboard-focus indicators. Every
+   * `:focus-visible` rule on buttons, inputs, links, and tabs must
+   * use this token — uniform behavior is itself a brand signal, and
+   * craft/accessibility-baseline.md treats focus visibility as a
+   * non-negotiable. Implemented as a `box-shadow` so it layers
+   * outside the element without affecting layout. */
+  --focus-ring: 0 0 0 3px color-mix(in oklab, var(--accent), transparent 70%);
+
+  /* ─── Motion ──────────────────────────────────────────────────────
+   * Two durations + one easing curve, per anti-ai-slop's "short,
+   * purposeful transitions (150–250ms) with stable easing". Add a
+   * third duration only when a real interaction needs it; do not
+   * invent `--motion-slow` speculatively. */
+  --motion-fast: 150ms;            /* hover, focus, micro-states */
+  --motion-base: 200ms;            /* general state changes */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ─── Layout ──────────────────────────────────────────────────────
+   * Container width and per-breakpoint gutter. Skill-side responsive
+   * code reads these to decide grid columns. */
+  --container-max: 1200px;
+  --container-gutter-desktop: 24px;
+  --container-gutter-tablet: 16px;
+  --container-gutter-phone: 12px;
+  --light-bg: #fafafa;
+  --light-surface: #ffffff;
+  --light-fg: #111111;
+}
+html[data-theme="dark"]{--bg:color-mix(in oklab, var(--light-fg) 88%, var(--light-surface));--surface:color-mix(in oklab, var(--light-fg) 80%, var(--light-surface));--fg:color-mix(in oklab, var(--light-surface) 93%, var(--light-fg));--fg-2:var(--fg);--muted:color-mix(in oklab, var(--light-surface) 60%, var(--light-fg));--meta:var(--muted);--border:color-mix(in oklab, var(--light-fg) 24%, transparent);--border-soft:var(--border)}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:var(--text-base);line-height:var(--leading-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+h1,h2,h3{font-family:var(--font-display);line-height:var(--leading-tight);letter-spacing:var(--tracking-display);margin:0;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+button{font:inherit;cursor:pointer}
+.app{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:100vh}
+/* Sidebar */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-5) var(--space-5) var(--space-4)}
+.brand-mark{width:40px;height:40px;border-radius:var(--radius-sm);background:var(--accent);color:var(--accent-on);display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);letter-spacing:-0.02em;flex:none}
+.brand-name{font-family:var(--font-display);font-weight:600;font-size:19px;line-height:1.1;letter-spacing:-0.01em;color:var(--fg)}
+.brand-sub{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted);letter-spacing:0.06em;text-transform:uppercase}
+.sidenav{padding:0 var(--space-3);display:flex;flex-direction:column;gap:2px}
+.sidenav-label{font-family:var(--font-mono);font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);padding:var(--space-4) var(--space-3) var(--space-2)}
+.nav-link{display:flex;align-items:center;gap:var(--space-3);min-height:44px;padding:10px var(--space-3);border-radius:var(--radius-sm);color:var(--muted);font-size:var(--text-sm);font-weight:500;border-left:3px solid transparent}
+.nav-link svg{width:18px;height:18px;flex:none}
+.nav-link:hover{background:color-mix(in oklab, var(--fg), transparent 94%);color:var(--fg);text-decoration:none}
+.nav-link[aria-current="page"]{background:color-mix(in oklab, var(--accent), transparent 90%);color:var(--accent);border-left-color:var(--accent)}
+.nav-badge{margin-left:auto;font-family:var(--font-mono);font-size:var(--text-xs);background:color-mix(in oklab, var(--fg), transparent 92%);color:var(--fg);border-radius:var(--radius-pill);padding:2px 8px;min-width:28px;text-align:center}
+.nav-link[aria-current="page"] .nav-badge{background:color-mix(in oklab, var(--accent), transparent 85%);color:var(--accent)}
+.sync-card{margin:var(--space-4);padding:var(--space-4);border:1px solid var(--border);border-radius:var(--radius-md);background:var(--bg);display:flex;gap:var(--space-3);align-items:flex-start}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--success);margin-top:7px;flex:none}
+.sync-card p{font-size:var(--text-sm)}
+.sync-card .meta{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted);margin-top:2px}
+.theme-toggle{margin:0 var(--space-4) var(--space-2);display:flex;align-items:center;gap:10px;min-height:44px;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--muted);font-size:var(--text-sm);font-weight:600;width:calc(100% - 32px)}
+.theme-toggle:hover{border-color:var(--fg);color:var(--fg)}
+.theme-toggle svg{width:18px;height:18px;flex:none}
+.admin{margin-top:auto;border-top:1px solid var(--border);padding:var(--space-4) var(--space-5);display:flex;align-items:center;gap:var(--space-3)}
+.avatar{width:40px;height:40px;border-radius:50%;background:color-mix(in oklab, var(--fg), transparent 90%);color:var(--fg);display:grid;place-items:center;font-weight:600;font-size:var(--text-sm);flex:none;border:1px solid var(--border)}
+.admin-name{font-size:var(--text-sm);font-weight:600;line-height:1.3}
+.admin-role{font-size:var(--text-xs);color:var(--muted)}
+/* Main */
+.main{min-width:0;padding:var(--space-6) var(--space-8) var(--space-12);max-width:1240px;width:100%;margin:0 auto}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);margin-bottom:var(--space-6);flex-wrap:wrap}
+.eyebrow{font-family:var(--font-mono);font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin:0 0 var(--space-2)}
+.greeting{font-size:clamp(28px,3vw,36px);font-weight:600;letter-spacing:-0.01em}
+.date-line{color:var(--muted);font-size:var(--text-sm);margin-top:6px}
+.date-line .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.top-actions{display:flex;gap:var(--space-3);align-items:center;flex-wrap:wrap}
+.search{display:flex;align-items:center;gap:var(--space-2);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0 var(--space-3);min-height:44px;min-width:240px}
+.search input{border:0;background:transparent;color:var(--fg);font:inherit;font-size:var(--text-sm);width:100%;padding:10px 0}
+.search input:focus{outline:none}
+.search:focus-within{border-color:var(--accent);box-shadow:var(--focus-ring)}
+.search svg{width:16px;height:16px;color:var(--muted);flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px var(--space-4);border-radius:var(--radius-sm);border:1px solid transparent;font-size:var(--text-sm);font-weight:500;min-height:44px;transition:background var(--motion-fast) var(--ease-standard),border-color var(--motion-fast) var(--ease-standard);white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--accent);color:var(--accent-on);border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-primary:active{background:var(--accent-active)}
+.btn-secondary{background:transparent;color:var(--fg);border-color:var(--border)}
+.btn-secondary:hover{border-color:var(--fg)}
+.btn-ghost{background:transparent;color:var(--fg);border-color:transparent;padding-inline:8px}
+.btn-ghost:hover{color:var(--accent)}
+.demo-note{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted);border:1px dashed var(--border);border-radius:var(--radius-pill);padding:6px 12px;margin-bottom:var(--space-4);background:var(--surface)}
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--space-4);margin-bottom:var(--space-6)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-5)}
+.kpi-label{font-size:var(--text-sm);color:var(--muted);font-weight:500}
+.kpi-value{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:var(--text-2xl);font-weight:600;letter-spacing:-0.01em;margin:8px 0 4px;color:var(--fg)}
+.kpi-sub{font-size:var(--text-xs);color:var(--muted);line-height:1.45}
+.kpi-live .kpi-value{color:var(--accent);display:flex;align-items:center;gap:8px}
+.pulse{width:9px;height:9px;border-radius:50%;background:var(--accent);position:relative;flex:none}
+.pulse::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--accent);opacity:0.35;animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{0%{transform:scale(0.6);opacity:0.6}100%{transform:scale(1.15);opacity:0}}
+.kpi-accent{border-top:3px solid var(--accent)}
+/* Layout cols */
+.cols{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:var(--space-6);align-items:start}
+.stack-col{display:flex;flex-direction:column;gap:var(--space-6);min-width:0}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin-bottom:var(--space-4)}
+.section-head h2{font-size:var(--text-xl);font-weight:600}
+.section-head .meta{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted)}
+.next-card{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:var(--radius-md);background:var(--surface);padding:var(--space-5)}
+.next-top{display:flex;justify-content:space-between;gap:var(--space-3);align-items:flex-start;margin-bottom:var(--space-4);flex-wrap:wrap}
+.client{display:flex;gap:var(--space-3);align-items:center}
+.client-avatar{width:48px;height:48px;border-radius:50%;background:color-mix(in oklab, var(--accent), transparent 88%);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:var(--text-base);flex:none;border:1px solid color-mix(in oklab, var(--accent), transparent 75%)}
+.client-name{font-weight:600;font-size:17px}
+.client-meta{font-size:var(--text-sm);color:var(--muted)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:var(--radius-pill);font-family:var(--font-mono);font-size:11px;letter-spacing:0.04em;text-transform:uppercase;border:1px solid transparent;white-space:nowrap}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.badge-success{background:color-mix(in oklab, var(--success), transparent 88%);color:color-mix(in oklab, var(--success), black 28%);border-color:color-mix(in oklab, var(--success), transparent 70%)}
+.badge-warn{background:color-mix(in oklab, var(--warn), transparent 82%);color:color-mix(in oklab, var(--warn), black 32%);border-color:color-mix(in oklab, var(--warn), transparent 55%)}
+.badge-danger{background:color-mix(in oklab, var(--danger), transparent 88%);color:var(--danger);border-color:color-mix(in oklab, var(--danger), transparent 70%)}
+.badge-muted{background:transparent;color:var(--muted);border-color:var(--border)}
+.badge-accent{background:color-mix(in oklab, var(--accent), transparent 90%);color:var(--accent);border-color:color-mix(in oklab, var(--accent), transparent 70%)}
+.next-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-4);padding:var(--space-4) 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:var(--space-4)}
+.next-item-label{font-family:var(--font-mono);font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:4px}
+.next-item-value{font-weight:600;font-size:var(--text-sm)}
+.next-item-value.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.next-actions{display:flex;gap:var(--space-3);flex-wrap:wrap}
+.countdown{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--accent);margin-top:10px}
+/* Table list */
+.list-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-5)}
+.filters{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-4)}
+.chip{min-height:44px;display:inline-flex;align-items:center;padding:8px 14px;border-radius:var(--radius-pill);border:1px solid var(--border);background:transparent;color:var(--muted);font-size:var(--text-sm);font-weight:500}
+.chip:hover{border-color:var(--fg);color:var(--fg)}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.consulta{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:var(--space-3);align-items:center;padding:12px 0;border-top:1px solid var(--border)}
+.consulta:first-of-type{border-top:0}
+.hora{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-weight:600;font-size:var(--text-sm)}
+.hora small{display:block;font-weight:400;color:var(--muted);font-size:var(--text-xs)}
+.consulta-main{min-width:0}
+.consulta-cliente{font-weight:600;font-size:var(--text-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.consulta-sub{font-size:var(--text-xs);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.consulta-side{display:flex;align-items:center;gap:var(--space-2)}
+/* Pendencias */
+.pend-group{margin-bottom:var(--space-5)}
+.pend-group:last-child{margin-bottom:0}
+.pend-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3)}
+.pend-title h3{font-size:var(--text-base);font-weight:600;letter-spacing:0}
+.pend-count{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted)}
+.pend-item{display:flex;align-items:center;gap:var(--space-3);padding:11px 0;border-top:1px solid var(--border)}
+.pend-item:first-of-type{border-top:0;padding-top:0}
+.pend-item:last-child{padding-bottom:0}
+.pend-info{min-width:0;flex:1}
+.pend-name{font-size:var(--text-sm);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pend-detail{font-size:var(--text-xs);color:var(--muted);font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.mini-btn{min-height:44px;padding:8px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;font-size:13px;font-weight:500;color:var(--fg);white-space:nowrap}
+.mini-btn:hover{border-color:var(--fg)}
+.mini-btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.mini-btn.primary:hover{background:color-mix(in oklab, var(--fg), transparent 12%)}
+/* Acessos */
+.quicks{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}
+.quick{display:flex;flex-direction:column;gap:8px;padding:var(--space-4);border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface);min-height:118px;justify-content:space-between;color:var(--fg)}
+.quick:hover{border-color:var(--fg);text-decoration:none}
+.quick svg{width:20px;height:20px;color:var(--muted)}
+.quick:hover svg{color:var(--fg)}
+.quick-title{font-weight:600;font-size:var(--text-sm)}
+.quick-desc{font-size:var(--text-xs);color:var(--muted);line-height:1.5}
+.quick-cta{font-size:13px;font-weight:500;color:var(--accent)}
+.pagefoot{margin-top:var(--space-8);padding-top:var(--space-4);border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap;color:var(--muted);font-size:13px}
+.pagefoot .meta{font-family:var(--font-mono);font-size:var(--text-xs)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg);padding:12px 18px;border-radius:var(--radius-sm);font-size:var(--text-sm);opacity:0;pointer-events:none;transition:opacity var(--motion-base) var(--ease-standard),transform var(--motion-base) var(--ease-standard);z-index:50;box-shadow:var(--elev-raised);max-width:min(92vw,480px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.empty{padding:20px 0 4px;color:var(--muted);font-size:var(--text-sm);display:none}
+@media (max-width:1120px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.cols{grid-template-columns:1fr}.next-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:920px){
+.app{grid-template-columns:1fr}
+.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border)}
+.sidenav{flex-direction:row;overflow:auto;padding-bottom:var(--space-3)}
+.sidenav-label,.sync-card{display:none}
+.nav-link{white-space:nowrap;border-left:0;border-bottom:3px solid transparent;border-radius:0}
+.nav-link[aria-current="page"]{border-bottom-color:var(--accent)}
+.main{padding:var(--space-4) var(--space-4) var(--space-12)}
+.topbar{flex-direction:column}
+.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+.quicks{grid-template-columns:1fr}
+.consulta{grid-template-columns:56px minmax(0,1fr)}
+.consulta-side{grid-column:2;justify-content:flex-start;flex-wrap:wrap}
+}
+</style>
+<script>(function(){try{var t=localStorage.getItem('hod-theme');if(t==='dark'){document.documentElement.dataset.theme='dark'}else if(t!=='light'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches&&t==='system'){document.documentElement.dataset.theme='dark'}}catch(e){}})();</script>
+<script>(function(){try{var z=localStorage.getItem('hod-zoom');if(z&&z!=='100%'){document.documentElement.style.zoom=z}}catch(e){}})();</script>
+</head>
+<body data-page="hod-home">
+<div class="app">
+<aside class="sidebar" data-od-id="navegacao-lateral" aria-label="Navegação principal">
+<div class="brand" data-od-id="logo-hod-hub">
+<div class="brand-mark" aria-hidden="true">H</div>
+<div><div class="brand-name">HOD Hub</div><div class="brand-sub">Consultorias</div></div>
+</div>
+<nav class="sidenav" aria-label="Páginas">
+<div class="sidenav-label">Operação</div>
+<a class="nav-link" data-od-id="nav-inicio" href="inicio.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/></svg>Início</a>
+<a class="nav-link" data-od-id="nav-organograma" href="organograma.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="4" width="16" height="5" rx="1.5"/><rect x="4" y="15" width="7" height="5" rx="1.5"/><rect x="13" y="15" width="7" height="5" rx="1.5"/><path d="M12 9v3M7.5 15v-2.5h9V15"/></svg>Organograma do Dia<span class="nav-badge num">18</span></a>
+<a class="nav-link" data-od-id="nav-horarios" href="disponibilidade.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.8 1.8"/></svg>Horários Livres<span class="nav-badge num">6</span></a>
+<a class="nav-link" data-od-id="nav-resumo" href="resumo-diario.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 12.5h6M9 16h4"/></svg>Resumo Diário</a>
+<a class="nav-link" data-od-id="nav-analytics" href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Analytics</a>
+<a class="nav-link" data-od-id="nav-config" href="configuracoes.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.06-.4.1-.8.1-1.2Z"/></svg>Configurações</a>
+</nav>
+<div class="sync-card" data-od-id="status-agenda">
+<span class="sync-dot" aria-hidden="true"></span>
+<div><p><strong>Google Agenda sincronizada</strong></p><p class="meta">Última atualização às <span class="num" id="sync-time">09:42</span> · 2 agendas</p></div>
+</div>
+<button class="theme-toggle" data-od-id="alternar-tema" type="button" aria-pressed="false" aria-label="Alternar entre modo claro e escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 13.5A8 8 0 0 1 10.5 4 8 8 0 1 0 20 13.5Z"/></svg><span>Modo escuro</span></button>
+<script>(function(){var b=document.currentScript.previousElementSibling;function paint(){var d=document.documentElement.dataset.theme==='dark';b.setAttribute('aria-pressed',d?'true':'false');b.querySelector('span').textContent=d?'Modo claro':'Modo escuro'}b.addEventListener('click',function(){var d=document.documentElement.dataset.theme!=='dark';if(d){document.documentElement.dataset.theme='dark'}else{document.documentElement.removeAttribute('data-theme')}try{localStorage.setItem('hod-theme',d?'dark':'light')}catch(e){}paint();var t=document.getElementById('toast');if(t){t.textContent=d?'Modo escuro ativado.':'Modo claro ativado.';t.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(function(){t.classList.remove('show')},2200)}});paint()})();</script>
+<div class="admin" data-od-id="perfil-admin">
+<div class="avatar" aria-hidden="true">DM</div>
+<div style="min-width:0"><div class="admin-name">Diego Martins</div><div class="admin-role">Administrador · Operação</div></div>
+</div>
+</aside>
+<main class="main" id="conteudo">
+<span class="demo-note" data-od-id="aviso-demo">Demonstração · dados de exemplo para validar o fluxo do dia</span>
+<header class="topbar" data-od-id="cabecalho-dia">
+<div>
+<p class="eyebrow">HOD Hub · Operação de hoje</p>
+<h1 class="greeting" id="saudacao">Bom dia, Diego</h1>
+<p class="date-line" id="data-atual">terça-feira, 22 de setembro de 2026 · <span class="num">18</span> consultorias importadas do Google Agenda</p>
+</div>
+<div class="top-actions">
+<label class="search" data-od-id="busca-consultoria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="campo-busca" type="search" placeholder="Buscar cliente, closer ou horário…" aria-label="Buscar consultoria" /></label>
+<button class="btn btn-secondary" data-od-id="btn-sincronizar" id="btn-sync" type="button">Sincronizar agora</button>
+<button class="btn btn-primary" data-od-id="btn-nova-consultoria" id="btn-nova" type="button">Nova consultoria</button>
+</div>
+</header>
+<section class="datebar operational-datebar" data-od-id="controle-data" aria-label="Controle de data"><div class="nav-btns"><button class="arrow-btn" id="prev-day" type="button" aria-label="Dia anterior">‹</button><button class="arrow-btn" id="next-day" type="button" aria-label="Próximo dia">›</button><button class="today-btn" id="today-btn" type="button">Hoje</button></div><div class="date-current"><strong id="selected-date">22 de setembro de 2026</strong><span>Visão operacional do dia</span></div><label class="availability-date-picker" for="home-date"><span>Ir para uma data</span><input id="home-date" type="date" aria-label="Escolher data da página inicial" /></label></section>
+<section aria-label="Indicadores de hoje" data-od-id="indicadores-hoje">
+<div class="kpis">
+<div class="card" data-od-id="kpi-total"><div class="kpi-label">Total de hoje</div><div class="kpi-value num" id="kpi-total-val">18</div><div class="kpi-sub">consultorias na grade · 09:00 às 19:30</div></div>
+<div class="card" data-od-id="kpi-confirmadas"><div class="kpi-label">Confirmadas</div><div class="kpi-value num" id="kpi-conf-val">14</div><div class="kpi-sub">78% de confirmação até agora</div></div>
+<div class="card kpi-live kpi-accent" data-od-id="kpi-agora"><div class="kpi-label">Acontecendo agora</div><div class="kpi-value num"><span class="pulse" aria-hidden="true"></span><span id="kpi-agora-val">1</span></div><div class="kpi-sub">Patrícia Gomes · com Rafael até 14:20</div></div>
+<div class="card" data-od-id="kpi-comparecimentos"><div class="kpi-label">Comparecimentos</div><div class="kpi-value num">7</div><div class="kpi-sub">presenças registradas hoje</div></div>
+<div class="card" data-od-id="kpi-noshow"><div class="kpi-label">No-shows</div><div class="kpi-value num">2</div><div class="kpi-sub">aguardando contato de retorno</div></div>
+<div class="card" data-od-id="kpi-livres"><div class="kpi-label">Horários livres</div><div class="kpi-value num">6</div><div class="kpi-sub">janelas para encaixe ainda hoje</div></div>
+</div>
+</section>
+<div class="cols">
+<div class="stack-col">
+<section data-od-id="proxima-consultoria" aria-label="Próxima consultoria">
+<div class="section-head"><h2>Próxima consultoria</h2><span class="meta num" id="contagem">começa em ~22 min</span></div>
+<div class="next-card" data-od-id="cartao-proxima">
+<div class="next-top">
+<div class="client"><div class="client-avatar" aria-hidden="true">MD</div><div><div class="client-name">Marina Duarte</div><div class="client-meta">Diagnóstico comercial · primeira sessão</div></div></div>
+<span class="badge badge-success" data-od-id="selo-confirmacao"><span class="badge-dot" aria-hidden="true"></span>Confirmada</span>
+</div>
+<div class="next-grid">
+<div><div class="next-item-label">Horário</div><div class="next-item-value num">14:30 – 15:00</div></div>
+<div><div class="next-item-label">Closer</div><div class="next-item-value">Rafael Lima</div></div>
+<div><div class="next-item-label">Sala</div><div class="next-item-value">Meet · Sala HOD 03</div></div>
+<div><div class="next-item-label">Confirmação</div><div class="next-item-value">WhatsApp · há 40 min</div></div>
+</div>
+<div class="next-actions">
+<button class="btn btn-secondary" data-od-id="btn-ver-ficha" type="button">Ver ficha do cliente</button>
+<button class="btn btn-secondary" data-od-id="btn-abrir-meet" type="button">Abrir link do Meet</button>
+</div>
+<p class="countdown" id="countdown-line">Check-in libera às 14:20 · lembrete automático já enviado.</p>
+</div>
+</section>
+<section class="list-card" data-od-id="proximas-consultorias" aria-label="Próximas consultorias do dia">
+<div class="section-head"><h2>Próximas do dia</h2><a href="organograma.html" data-od-id="link-ver-organograma">Ver organograma</a></div>
+<div class="filters" role="group" aria-label="Filtrar por status">
+<button class="chip" type="button" aria-pressed="true" data-filter="todas" data-od-id="filtro-todas">Todas</button>
+<button class="chip" type="button" aria-pressed="false" data-filter="confirmada" data-od-id="filtro-confirmadas">Confirmadas</button>
+<button class="chip" type="button" aria-pressed="false" data-filter="pendente" data-od-id="filtro-pendentes">Pendentes</button>
+<button class="chip" type="button" aria-pressed="false" data-filter="livre" data-od-id="filtro-livres">Livres</button>
+</div>
+<div id="lista-consultas">
+<div class="consulta" data-status="confirmada" data-search="marina duarte rafael lima 14:30"><div class="hora">14:30<small>30 min</small></div><div class="consulta-main"><div class="consulta-cliente">Marina Duarte</div><div class="consulta-sub">Rafael Lima · Meet Sala 03</div></div><div class="consulta-side"><span class="badge badge-success"><span class="badge-dot"></span>Confirmada</span></div></div>
+<div class="consulta" data-status="confirmada" data-search="joão pedro freitas camila sousa 15:00"><div class="hora">15:00<small>30 min</small></div><div class="consulta-main"><div class="consulta-cliente">João Pedro Freitas</div><div class="consulta-sub">Camila Sousa · Presencial Sala 01</div></div><div class="consulta-side"><span class="badge badge-success"><span class="badge-dot"></span>Confirmada</span></div></div>
+<div class="consulta" data-status="pendente" data-search="beatriz nogueira rafael lima 15:30"><div class="hora">15:30<small>30 min</small></div><div class="consulta-main"><div class="consulta-cliente">Beatriz Nogueira</div><div class="consulta-sub">Rafael Lima · Meet Sala 03</div></div><div class="consulta-side"><span class="badge badge-warn"><span class="badge-dot"></span>Aguard. confirmação</span></div></div>
+<div class="consulta" data-status="livre" data-search="horário livre 16:00 encaixe"><div class="hora">16:00<small>30 min</small></div><div class="consulta-main"><div class="consulta-cliente">Horário livre</div><div class="consulta-sub">Janela para encaixe · qualquer closer</div></div><div class="consulta-side"><span class="badge badge-muted">Livre</span></div></div>
+<div class="consulta" data-status="confirmada" data-search="carlos mota thiago abreu 16:30"><div class="hora">16:30<small>45 min</small></div><div class="consulta-main"><div class="consulta-cliente">Carlos Mota</div><div class="consulta-sub">Thiago Abreu · Meet Sala 02</div></div><div class="consulta-side"><span class="badge badge-success"><span class="badge-dot"></span>Confirmada</span></div></div>
+<div class="consulta" data-status="pendente" data-search="fernanda lins camila sousa 17:15"><div class="hora">17:15<small>30 min</small></div><div class="consulta-main"><div class="consulta-cliente">Fernanda Lins</div><div class="consulta-sub">Camila Sousa · Meet Sala 01</div></div><div class="consulta-side"><span class="badge badge-warn"><span class="badge-dot"></span>Aguard. confirmação</span></div></div>
+</div>
+<p class="empty" id="lista-vazia">Nenhuma consultoria neste filtro. Ajuste o filtro ou use a busca.</p>
+</section>
+</div>
+<div class="stack-col">
+<section class="list-card" data-od-id="pendencias" aria-label="Pendências">
+<div class="section-head"><h2>Pendências</h2><span class="meta num" id="pend-total">6 itens</span></div>
+<div class="pend-group" data-od-id="pend-confirmacao">
+<div class="pend-title"><h3>Confirmação</h3><span class="pend-count num">3 aguardando</span></div>
+<div class="pend-item" data-od-id="pend-item-beatriz"><div class="pend-info"><div class="pend-name">Beatriz Nogueira</div><div class="pend-detail">15:30 · Rafael · sem retorno há 2 h</div></div><button class="mini-btn primary" type="button" data-action="confirmar">Confirmar</button></div>
+<div class="pend-item" data-od-id="pend-item-fernanda"><div class="pend-info"><div class="pend-name">Fernanda Lins</div><div class="pend-detail">17:15 · Camila · mensagem visualizada</div></div><button class="mini-btn primary" type="button" data-action="confirmar">Confirmar</button></div>
+<div class="pend-item" data-od-id="pend-item-paulo"><div class="pend-info"><div class="pend-name">Paulo Henrique</div><div class="pend-detail">18:00 · Thiago · 2ª tentativa hoje</div></div><button class="mini-btn" type="button" data-action="lembrar">Lembrar</button></div>
+</div>
+<div class="pend-group" data-od-id="pend-reagendamento">
+<div class="pend-title"><h3>Reagendamento</h3><span class="pend-count num">2 pedidos</span></div>
+<div class="pend-item" data-od-id="pend-item-lucas"><div class="pend-info"><div class="pend-name">Lucas Andrade</div><div class="pend-detail">pediu 19:00 → amanhã cedo</div></div><button class="mini-btn" type="button" data-action="reagendar">Reagendar</button></div>
+<div class="pend-item" data-od-id="pend-item-ana"><div class="pend-info"><div class="pend-name">Ana Clara Souza</div><div class="pend-detail">conflito 11:00 · sugerir 16:00 livre</div></div><button class="mini-btn" type="button" data-action="reagendar">Reagendar</button></div>
+</div>
+<div class="pend-group" data-od-id="pend-noshow">
+<div class="pend-title"><h3>No-show</h3><span class="pend-count num">1 retorno</span></div>
+<div class="pend-item" data-od-id="pend-item-roberto"><div class="pend-info"><div class="pend-name">Roberto Farias</div><div class="pend-detail">faltou 10:30 · ligar até 15:00</div></div><button class="mini-btn" type="button" data-action="retomar">Retomar</button></div>
+</div>
+</section>
+<section data-od-id="acessos-rapidos" aria-label="Acessos rápidos">
+<div class="section-head"><h2>Acessos</h2><span class="meta">atalhos do fluxo</span></div>
+<div class="quicks">
+<a class="quick" data-od-id="acesso-organograma" href="organograma.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="4" width="16" height="5" rx="1.5"/><rect x="4" y="15" width="7" height="5" rx="1.5"/><rect x="13" y="15" width="7" height="5" rx="1.5"/></svg><span><span class="quick-title">Organograma do Dia</span><br /><span class="quick-desc">Grade por horário, closer e sala.</span></span><span class="quick-cta">Abrir grade →</span></a>
+<a class="quick" data-od-id="acesso-horarios" href="disponibilidade.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.8 1.8"/></svg><span><span class="quick-title">Horários Livres</span><br /><span class="quick-desc">6 janelas para encaixe hoje.</span></span><span class="quick-cta">Ver janelas →</span></a>
+<a class="quick" data-od-id="acesso-resumo" href="resumo-diario.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 12.5h6M9 16h4"/></svg><span><span class="quick-title">Resumo Diário</span><br /><span class="quick-desc">Presenças, faltas e repasses.</span></span><span class="quick-cta">Fechar o dia →</span></a>
+<a class="quick" data-od-id="acesso-analytics" href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg><span><span class="quick-title">Analytics</span><br /><span class="quick-desc">No-show e conversão por closer.</span></span><span class="quick-cta">Ver números →</span></a>
+</div>
+</section>
+</div>
+</div>
+<footer class="pagefoot" data-od-id="rodape"><span>© HOD Hub · Operação interna</span><span class="meta">Fonte: Google Agenda · protótipo navegável · Início v1</span></footer>
+</main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="/src/neutral-main.js"></script>
+</body>
+</html>
