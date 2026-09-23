@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { rescheduledConsultations, saoPauloDate, summarizeConsultations, validDate } from '../src/rules/daily-summary.js';
+import { createdWithinRange, rescheduledConsultations, saoPauloDate, summarizeConsultations, validDate } from '../src/rules/daily-summary.js';
 import { attendanceStatus } from '../src/rules/consultation-rules.js';
 
 test('resumo distingue atribuição, presença, overs e reagendamento', () => {
@@ -58,4 +58,10 @@ test('data de criação usa São Paulo e rejeita datas impossíveis', () => {
   assert.equal(saoPauloDate(undefined), '');
   assert.equal(validDate('2026-02-30'), false);
   assert.equal(validDate('2026-09-15'), true);
+});
+
+test('criação no dia entra mesmo quando a reunião é futura', () => {
+  assert.equal(createdWithinRange('2026-09-23T23:40:00Z', '2026-09-23', '2026-09-23'), true);
+  assert.equal(createdWithinRange('2026-09-24T02:30:00Z', '2026-09-23', '2026-09-23'), true);
+  assert.equal(createdWithinRange('2026-09-24T03:00:00Z', '2026-09-23', '2026-09-23'), false);
 });

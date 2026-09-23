@@ -1,5 +1,11 @@
 # Changelog
 
+## 23/09/2026 · captura de criações para reuniões futuras
+
+- A sincronização passou a consultar as alterações do Google Agenda desde o início do dia solicitado e registra as criações qualificadas mesmo quando a reunião está marcada para uma data futura.
+- O Resumo Diário deixa de depender de `event_date` para descobrir novos leads: a entrada é determinada por `created_at_google`, no fuso `America/Sao_Paulo`.
+- Validação real após sincronização: 12 criações em 23/09/2026, 10 qualificados e 2 reagendadas; há reuniões em 24 e 25/09. Regressão cobre uma criação do dia com reunião futura.
+
 ## 23/09/2026 · precisão de qualificados no Resumo Diário
 
 - **Regra oficial:** só um evento criado no Google Agenda com título `Consultoria Nome Sobrenome` integra a base de criação. A data do filtro é a data/hora de criação em `America/Sao_Paulo`, nunca a data da reunião.

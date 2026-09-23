@@ -22,6 +22,7 @@ import {
 } from './rules/availability-rules.js';
 import { broadcast } from './stream.js';
 import { operationalPresentation } from './rules/consultation-rules.js';
+import { createdWithinRange } from './rules/daily-summary.js';
 
 function presentEvent(row: Record<string, unknown>) {
   return { ...row, presentation: operationalPresentation({ ...row, isOverbooking: Boolean(row.isOverbooking) }) };
@@ -331,6 +332,7 @@ calendarRouter.post('/sync', async (req, res, next) => {
     // nunca apaga o range) e ex-integrantes via agenda primary.
     const timeMin = `${startDate}T00:00:00-03:00`;
     const timeMax = `${addDays(endDate, 1)}T00:00:00-03:00`;
+    const createdMin = timeMin;
     const upsertCalendar = db.prepare(UPSERT_CALENDAR_SQL);
     const upsertEvent = db.prepare(UPSERT_EVENT_SQL);
     const rememberLeadCreation = db.prepare(
@@ -445,6 +447,44 @@ calendarRouter.post('/sync', async (req, res, next) => {
           ).run(local.id, startDate, endDate, ...seenEventIds);
         } else {
           db.prepare('DELETE FROM events WHERE calendar_id=? AND event_date BETWEEN ? AND ?').run(local.id, startDate, endDate);
+        }
+
+        // A data da reunião não define quando um lead foi gerado. Busca também
+        // as alterações do Google a partir do início do dia e registra apenas
+        // os eventos efetivamente *criados* no intervalo solicitado. Assim uma
+        // Consultoria criada hoje para sábado aparece no Resumo de hoje.
+        const recentlyChanged = await googleGetAll(
+          `calendars/${encodeURIComponent(String(calendar.id))}/events`,
+          accessToken,
+          { updatedMin: createdMin, singleEvents: true, showDeleted: false, maxResults: 2500 }
+        );
+        for (const event of recentlyChanged) {
+          const ev = event as Record<string, unknown>;
+          const createdAt = String(ev.created || '');
+          if (!createdWithinRange(createdAt, startDate, endDate)) continue;
+          const title = String(ev.summary || '');
+          if (ev.status === 'cancelled' || !isQualifiedConsultoriaTitle(title)) continue;
+          const evStart = ev.start as Record<string, string> | undefined;
+          const evEnd = ev.end as Record<string, string> | undefined;
+          const startsAt = evStart?.dateTime || (evStart?.date ? `${evStart.date}T00:00:00-03:00` : null);
+          const endsAt = evEnd?.dateTime || (evEnd?.date ? `${evEnd.date}T23:59:59-03:00` : null);
+          if (!startsAt || !endsAt) continue;
+          const entryPoints = (ev.conferenceData as { entryPoints?: { entryPointType?: string; uri?: string }[] } | undefined)?.entryPoints;
+          const attendance = attendanceFromGoogle(
+            ev as unknown as Parameters<typeof attendanceFromGoogle>[0],
+            String(calendar.id || '')
+          );
+          const eventDate = dateInSaoPaulo(startsAt);
+          const eventKey = `${local.id}:${String(ev.id || '')}`;
+          upsertEvent.run(
+            eventKey, String(ev.id || ''), local.id, eventDate, title, parseLead(title), parsePhone(String(ev.description || '')),
+            (ev.hangoutLink as string) || entryPoints?.find((item) => item.entryPointType === 'video')?.uri || null,
+            startsAt, endsAt, attendance.attendeeDeclined ? 1 : 0, attendance.hasExternalAttendee ? 1 : 0,
+            attendance.selfResponseStatus,
+            ((ev.organizer as Record<string, string> | undefined)?.email || (ev.creator as Record<string, string> | undefined)?.email || null) as string | null,
+            'consultoria', createdAt, JSON.stringify(ev)
+          );
+          rememberLeadCreation.run(userId, String(ev.id || ''), parseLead(title), parsePhone(String(ev.description || '')), eventDate, createdAt, closer.name);
         }
       } catch (error) {
         failures.push({ calendar: closer.name, message: (error as Error).message });

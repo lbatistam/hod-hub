@@ -6,6 +6,9 @@
   Agenda com título `Consultoria Nome Sobrenome`, no fuso America/Sao_Paulo.
   Nomes/telefones já presentes no histórico qualificado aparecem em
   “Reagendadas”; a tabela separa criação no Google da data e hora da reunião.
+- A sincronização captura as criações do dia mesmo quando a consultoria foi
+  marcada para outra data. Em 23/09, a validação real encontrou 12 criações:
+  10 qualificadas e 2 reagendadas.
 
 - Frontend Neutral Modern consolidado como interface oficial.
 - Kanban responsivo com ações manuais e drag and drop.
