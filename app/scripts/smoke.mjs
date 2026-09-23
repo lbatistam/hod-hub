@@ -38,7 +38,7 @@ function spawnPreview() {
     }, 15_000);
     const poll = setInterval(async () => {
       try {
-        const response = await fetch(url, { cache: 'no-store' });
+        const response = await fetch(`${url}/production/organograma.html`, { cache: 'no-store' });
         if (!response.ok || settled) return;
         settled = true;
         clearInterval(poll);
