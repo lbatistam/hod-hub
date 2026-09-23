@@ -10,6 +10,7 @@ import {
   eventFlow,
   eventOwnerLabel,
   formatDate,
+  formatDateInSaoPaulo,
   formatTime,
   getMe,
   isNoShow,
@@ -634,7 +635,7 @@ async function renderDaily(force = false) {
     dailyCreatedEvents = items;
     const table = tbody.closest('table');
     table.querySelector('thead').innerHTML =
-      '<tr><th>Lead</th><th>Tipo</th><th>Registrado em</th><th>Reunião</th><th>Responsável</th><th>Situação</th></tr>';
+      '<tr><th>Lead</th><th>Tipo</th><th>Criado no Google Agenda</th><th>Reunião</th><th>Responsável</th><th>Situação</th></tr>';
     const row = event => {
       const isRescheduled = event.summaryKind === 'rescheduled';
       const kind = isRescheduled ? 'Reagendada' : 'Qualificado';
@@ -643,7 +644,7 @@ async function renderDaily(force = false) {
       return `<tr class="${event.attendeeDeclined ? 'lead-declined' : ''}" data-search="${escapeHtml(`${event.leadName} ${event.phone || ''} ${eventOwnerLabel(event)} ${kind}`.toLowerCase())}" data-kind="${event.summaryKind}">
         <td class="created-lead"><strong>${escapeHtml(event.leadName)}</strong><small>${escapeHtml(event.phone || 'Sem telefone')}</small></td>
         <td><span class="created-kind" data-kind="${event.summaryKind === 'rescheduled' ? 'repeated' : 'new'}">${kind}</span></td>
-        <td class="date-cell"><strong>${registeredAt ? formatDate(String(registeredAt).slice(0, 10)) : '—'}</strong><span>${registeredAt ? `às ${formatTime(registeredAt)}` : 'Horário indisponível'}</span></td>
+        <td class="date-cell"><strong>${registeredAt ? formatDateInSaoPaulo(registeredAt) : '—'}</strong><span>${registeredAt ? `às ${formatTime(registeredAt)}` : 'Horário indisponível'}</span></td>
         <td class="date-cell"><strong>${formatDate(event.eventDate)}</strong><span>às ${formatTime(event.startsAt)}</span></td>
         <td>${escapeHtml(eventOwnerLabel(event))}</td>
         <td>${escapeHtml(state)}</td>

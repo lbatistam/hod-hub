@@ -5,7 +5,7 @@
 import express from 'express';
 import { db } from './db.js';
 import { requireUser, SessionUser } from './auth.js';
-import { rescheduledConsultations, saoPauloDate, summarizeConsultations, validDate } from './rules/daily-summary.js';
+import { saoPauloDate, summarizeConsultations, validDate } from './rules/daily-summary.js';
 import {
   attendanceStatus,
   classifyCreatedLeads,
@@ -32,12 +32,13 @@ interface EventRow {
   manualStatus: string | null;
   confirmation: string;
   googleEventId: string;
+  title: string;
 }
 
 function rowsBetween(startDate: string, endDate: string, includeFormer: boolean): EventRow[] {
   return db
     .prepare(
-      `SELECT events.id, COALESCE(events.source_google_event_id, events.google_event_id) AS googleEventId,
+      `SELECT events.id, COALESCE(events.source_google_event_id, events.google_event_id) AS googleEventId, events.title,
        events.event_date AS eventDate, events.lead_name AS leadName, events.phone,
        events.starts_at AS startsAt, events.ends_at AS endsAt,
        events.attendee_declined AS attendeeDeclined, events.has_external_attendee AS hasExternalAttendee,
@@ -90,7 +91,8 @@ summaryRouter.get('/daily-summary', (req, res, next) => {
       .prepare(
         `SELECT id, source_google_event_id AS googleEventId, lead_name AS leadName, phone,
          event_date AS eventDate, created_at_google AS createdAt, original_closer_name AS closer
-         FROM lead_creation_history WHERE owner_user_id=? AND datetime(created_at_google) < datetime(?)
+         FROM lead_creation_history
+         WHERE owner_user_id=? AND qualified_consultoria=1 AND datetime(created_at_google) < datetime(?)
          ORDER BY datetime(created_at_google)`
       )
       .all(user.id, before) as { id: number; googleEventId: string; leadName: string; phone: string | null; createdAt: string; eventDate: string; closer: string }[];
@@ -102,24 +104,6 @@ summaryRouter.get('/daily-summary', (req, res, next) => {
       createdToday,
       historical
     );
-    const historyForClassification = historical.map(r => ({ ...r, isOverbooking: 0 }));
-    const rescheduledRows = rescheduledConsultations(rows, historyForClassification);
-    const lastReschedule = db.prepare(
-      `SELECT changed_at AS changedAt FROM event_state_history
-       WHERE event_id=? AND new_status IN ('reagendar','reagendado')
-       ORDER BY datetime(changed_at) DESC, id DESC LIMIT 1`
-    );
-    const rescheduledEvents = rescheduledRows.map(r => {
-      const manual = ['reagendar', 'reagendado'].includes(String(r.manualStatus));
-      const stateChange = manual ? lastReschedule.get(r.id) as { changedAt: string } | undefined : undefined;
-      return {
-        id: r.id, leadName: r.leadName, phone: r.phone, closer: r.closer,
-        eventDate: r.eventDate, startsAt: r.startsAt, createdAt: r.createdAt,
-        manualStatus: r.manualStatus,
-        rescheduleSource: manual ? 'manual' : 'creation_history',
-        rescheduledAt: stateChange?.changedAt ? `${stateChange.changedAt.replace(' ', 'T')}Z` : manual ? null : r.createdAt,
-      };
-    });
     const createdEvent = (r: typeof historical[number], creationKind: string) => {
       const live = liveByGoogleId.get(r.googleEventId);
       return { ...r, ...live, id: live?.id ?? `history-${r.id}`, createdAt: r.createdAt, creationKind,
@@ -141,9 +125,11 @@ summaryRouter.get('/daily-summary', (req, res, next) => {
     res.json({
       date,
       week,
-      ...summarizeConsultations(rows, historyForClassification),
+      ...summarizeConsultations(rows, historical.map(r => ({ ...r, isOverbooking: 0 }))),
       qualified: { total: newLeads.length, events: newLeads.map(r => createdEvent(r, 'new')) },
-      rescheduledEvents,
+      // Reagendada no quadro de criação = nova agenda do dia para um nome que
+      // já existia no histórico qualificado. Status manual não altera essa lista.
+      rescheduledEvents: repeated.map(r => ({ ...createdEvent(r, 'repeated'), rescheduledAt: r.createdAt, rescheduleSource: 'creation_history' })),
       created: { total: createdToday.length, new: newLeads.length, repeated: repeated.length,
         events: [...newLeads.map(r => createdEvent(r, 'new')), ...repeated.map(r => createdEvent(r, 'repeated'))].sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt)) },
       verified: verifiedPeriod(date),

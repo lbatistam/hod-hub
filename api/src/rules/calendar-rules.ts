@@ -74,6 +74,19 @@ export function extractConsultoriaLead(title = ''): string | null {
     .trim();
 }
 
+// Regra oficial do Resumo Diário: só uma agenda intitulada
+// "Consultoria Nome Sobrenome" gera um qualificado. Um título genérico, um
+// follow-up ou apenas "Consultoria" não pode contaminar a base de novos leads.
+export function isQualifiedConsultoriaTitle(title = ''): boolean {
+  const lead = extractConsultoriaLead(title);
+  return Boolean(lead && hasFullLeadName(lead));
+}
+
+export function hasFullLeadName(value = ''): boolean {
+  const words = String(value).trim().split(/\s+/).filter((word) => /[A-Za-zÀ-ÿ]/.test(word));
+  return words.length >= 2;
+}
+
 export function attendanceFromGoogle(event: GoogleEventLike = {}, calendarEmail = ''): {
   selfResponseStatus: string;
   attendeeDeclined: boolean;

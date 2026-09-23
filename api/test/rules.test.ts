@@ -1,7 +1,7 @@
 // Regras operacionais oficiais — port fiel da V1. Qualquer falha aqui bloqueia a migração.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { extractConsultoriaLead, isConsultoriaTitle } from '../src/rules/calendar-rules.js';
+import { extractConsultoriaLead, hasFullLeadName, isConsultoriaTitle, isQualifiedConsultoriaTitle } from '../src/rules/calendar-rules.js';
 import {
   addOverbookingCounts,
   buildAvailability,
@@ -28,6 +28,14 @@ describe('consultoria title (V1 calendar-rules)', () => {
   it('extreai lead após o prefixo', () => {
     assert.equal(extractConsultoriaLead('HOD - Consultoria Maria Silva'), 'Maria Silva');
     assert.equal(extractConsultoriaLead('Reunião X'), null);
+  });
+  it('qualificado exige Consultoria e nome completo', () => {
+    assert.equal(isQualifiedConsultoriaTitle('Consultoria Maria Silva'), true);
+    assert.equal(isQualifiedConsultoriaTitle('HOD - Consultoria João da Silva'), true);
+    assert.equal(isQualifiedConsultoriaTitle('Consultoria Maria'), false);
+    assert.equal(isQualifiedConsultoriaTitle('Follow-up Maria Silva'), false);
+    assert.equal(hasFullLeadName('Maria Silva'), true);
+    assert.equal(hasFullLeadName('Maria'), false);
   });
 });
 

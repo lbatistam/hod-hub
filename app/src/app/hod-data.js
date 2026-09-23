@@ -139,6 +139,18 @@ export function formatTime(value) {
   }).format(new Date(value));
 }
 
+export function formatDateInSaoPaulo(value) {
+  if (!value || Number.isNaN(Date.parse(value))) {
+    return '—';
+  }
+  return new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  }).format(new Date(value));
+}
+
 export function escapeHtml(value = '') {
   return String(value)
     .replaceAll('&', '&amp;')

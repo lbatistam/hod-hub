@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-23 — precisão de Qualificados no dia
+
+O Resumo Diário passou a considerar somente agendas criadas no Google Agenda cujo título atende ao padrão `Consultoria Nome Sobrenome`. A separação é feita pela data e hora de criação em `America/Sao_Paulo`: um nome sem ocorrência qualificada anterior é **Qualificado**; um nome já presente no histórico é **Reagendada**. A tabela agora identifica a coluna como “Criado no Google Agenda” e apresenta a data e o horário de criação sem derivá-los da data da reunião.
+
+O histórico local recebeu marcação de origem para impedir follow-ups e reuniões SDR de contaminarem essa regra. Eventos antigos sem cópia ativa continuam servindo para reconhecer repetição quando preservam nome completo. Validação real de 23/09/2026: 3 criações, 1 qualificado e 2 reagendadas.
+
 ## 2026-09-22 — frontend Neutral Modern
 
 As seis telas do HOD Hub foram substituídas pelos HTMLs exportados pelo OpenDesign. Os dados demonstrativos e scripts simulados foram desligados; Início, Organograma, Horários Livres, Resumo Diário, Analytics e Configurações agora usam a HOD Platform em `http://localhost:8877/api/v1`. O launcher, o login, o PWA e a raiz do servidor passam a abrir a tela de Início. O frontend anterior foi preservado em `backups/hod-hub-frontend-before-neutral-modern-2026-09-22/` com checksums SHA-256.

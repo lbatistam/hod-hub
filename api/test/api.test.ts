@@ -64,7 +64,7 @@ describe('contrato /api/v1', () => {
     const token = 'isolated-summary-test';
     db.prepare('INSERT INTO sessions (token_hash,user_id,expires_at) VALUES (?,?,?)').run(hashToken(token), userId, Date.now() + 60000);
     const headers = { Authorization: `Bearer ${token}` };
-    db.prepare(`INSERT INTO lead_creation_history (owner_user_id,source_google_event_id,lead_name,event_date,created_at_google,original_closer_name) VALUES (?,?,?,?,?,?)`).run(userId,'deleted-event','Maria Silva','2026-10-20','2026-09-16T01:30:00Z','Rodrigo');
+    db.prepare(`INSERT INTO lead_creation_history (owner_user_id,source_google_event_id,lead_name,event_date,created_at_google,original_closer_name,qualified_consultoria) VALUES (?,?,?,?,?,?,1)`).run(userId,'deleted-event','Maria Silva','2026-10-20','2026-09-16T01:30:00Z','Rodrigo');
     const response = await fetch(`${base}/api/v1/daily-summary?date=2026-09-15`, { headers });
     assert.equal(response.status, 200);
     const summary = await response.json() as { created: { total:number; new:number; events: { archived:boolean; eventDate:string }[] }; qualified: { total:number; events: { archived:boolean; eventDate:string; createdAt:string }[] }; rescheduledEvents: unknown[]; happened:number };
@@ -80,6 +80,26 @@ describe('contrato /api/v1', () => {
     assert.deepEqual(summary.rescheduledEvents, []);
     assert.equal(summary.happened, 0);
     assert.equal((await fetch(`${base}/api/v1/daily-summary?date=2026-02-30`, { headers })).status, 400);
+  });
+
+  it('qualificados usa apenas Consultoria Nome Sobrenome e separa repetidas pelo histórico', async () => {
+    const { db } = await import('../src/db.js');
+    const { hashToken } = await import('../src/security.js');
+    const userId = Number(db.prepare(`INSERT INTO users (google_sub,email,name,role,status) VALUES ('qualified-test','qualified@example.invalid','Teste','admin','approved')`).run().lastInsertRowid);
+    const token = 'isolated-qualified-test';
+    db.prepare('INSERT INTO sessions (token_hash,user_id,expires_at) VALUES (?,?,?)').run(hashToken(token), userId, Date.now() + 60000);
+    const insert = db.prepare(`INSERT INTO lead_creation_history (owner_user_id,source_google_event_id,lead_name,event_date,created_at_google,original_closer_name,qualified_consultoria) VALUES (?,?,?,?,?,?,?)`);
+    insert.run(userId, 'maria-old', 'Maria Silva', '2026-09-10', '2026-09-10T12:00:00Z', 'Rodrigo', 1);
+    insert.run(userId, 'maria-repeat', 'Maria Silva', '2026-09-18', '2026-09-18T12:00:00Z', 'Rodrigo', 1);
+    insert.run(userId, 'ana-new', 'Ana Souza', '2026-09-18', '2026-09-18T13:00:00Z', 'Rodrigo', 1);
+    insert.run(userId, 'follow-up', 'Outra Pessoa', '2026-09-18', '2026-09-18T14:00:00Z', 'Rodrigo', 0);
+    const response = await fetch(`${base}/api/v1/daily-summary?date=2026-09-18`, { headers: { Authorization: `Bearer ${token}` } });
+    const summary = await response.json() as { qualified: { total: number; events: { leadName: string }[] }; rescheduledEvents: { leadName: string }[]; created: { total: number; new: number; repeated: number } };
+    assert.equal(summary.created.total, 2);
+    assert.equal(summary.created.new, 1);
+    assert.equal(summary.created.repeated, 1);
+    assert.deepEqual(summary.qualified.events.map(event => event.leadName), ['Ana Souza']);
+    assert.deepEqual(summary.rescheduledEvents.map(event => event.leadName), ['Maria Silva']);
   });
 
   it('validação de estado rejeita manualStatus inválido (com sessão fake? espera 401 antes de 400)', async () => {

@@ -3,6 +3,7 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import type { Database as DatabaseType } from 'better-sqlite3';
 import { config } from './config.js';
+import { hasFullLeadName, isQualifiedConsultoriaTitle } from './rules/calendar-rules.js';
 
 fs.mkdirSync(path.dirname(config.databasePath), { recursive: true });
 
@@ -112,6 +113,7 @@ db.exec(`
     event_date TEXT NOT NULL,
     created_at_google TEXT NOT NULL,
     original_closer_name TEXT,
+    qualified_consultoria INTEGER NOT NULL DEFAULT 0,
     recorded_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (owner_user_id, source_google_event_id)
   );
@@ -176,6 +178,7 @@ ensureColumn('events', 'self_response_status', "TEXT NOT NULL DEFAULT 'needsActi
 ensureColumn('events', 'organizer_email', 'TEXT');
 ensureColumn('events', 'meeting_kind', "TEXT NOT NULL DEFAULT 'consultoria'");
 ensureColumn('events', 'created_at_google', 'TEXT');
+ensureColumn('lead_creation_history', 'qualified_consultoria', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('daily_summaries', 'over_called_count', 'INTEGER');
 ensureColumn('daily_summaries', 'attended_count', 'INTEGER');
 ensureColumn('daily_summaries', 'no_show_ps_count', 'INTEGER');
@@ -234,6 +237,29 @@ db.prepare(
      AND events.source_google_event_id IS NOT NULL
      AND events.created_at_google IS NOT NULL`
 ).run();
+
+// Histórico anterior à regra explícita: marca somente os registros cuja cópia
+// local ainda comprova o título "Consultoria Nome Sobrenome". O restante não é
+// apagado, mas deixa de alterar a contagem de qualificados/reagendadas.
+const updateQualifiedHistory = db.prepare(
+  `UPDATE lead_creation_history SET qualified_consultoria=? WHERE id=?`
+);
+const historyWithCurrentEvent = db.prepare(
+  `SELECT lead_creation_history.id, lead_creation_history.lead_name AS leadName, events.title
+   FROM lead_creation_history
+   LEFT JOIN events ON events.source_google_event_id=lead_creation_history.source_google_event_id`
+).all() as { id: number; leadName: string; title: string | null }[];
+db.transaction(() => {
+  for (const row of historyWithCurrentEvent) {
+    // Eventos antigos que já saíram da cópia local continuam sendo histórico do
+    // Google Agenda. Para eles, nome e sobrenome preservados são a evidência
+    // disponível; quando há título, ele sempre prevalece.
+    const qualified = row.title === null
+      ? hasFullLeadName(row.leadName)
+      : isQualifiedConsultoriaTitle(row.title);
+    updateQualifiedHistory.run(qualified ? 1 : 0, row.id);
+  }
+})();
 
 // Defaults centrais de negócio (compartilhados entre os 3 apps)
 const seedSetting = db.prepare(

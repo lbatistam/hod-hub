@@ -7,6 +7,7 @@ import {
   attendanceFromGoogle,
   classifySdrMeeting,
   extractConsultoriaLead,
+  isQualifiedConsultoriaTitle,
 } from './rules/calendar-rules.js';
 import { closerForCalendar, configuredCloserEmails, historicalClosers } from './rules/closers.js';
 import { db } from './db.js';
@@ -334,13 +335,14 @@ calendarRouter.post('/sync', async (req, res, next) => {
     const upsertEvent = db.prepare(UPSERT_EVENT_SQL);
     const rememberLeadCreation = db.prepare(
       `INSERT INTO lead_creation_history
-       (owner_user_id,source_google_event_id,lead_name,phone,event_date,created_at_google,original_closer_name)
-       VALUES (?,?,?,?,?,?,?)
+       (owner_user_id,source_google_event_id,lead_name,phone,event_date,created_at_google,original_closer_name,qualified_consultoria)
+       VALUES (?,?,?,?,?,?,?,1)
        ON CONFLICT(owner_user_id,source_google_event_id) DO UPDATE SET
          lead_name=excluded.lead_name,
          phone=COALESCE(excluded.phone,lead_creation_history.phone),
          event_date=excluded.event_date,
-         original_closer_name=COALESCE(lead_creation_history.original_closer_name,excluded.original_closer_name)`
+         original_closer_name=COALESCE(lead_creation_history.original_closer_name,excluded.original_closer_name),
+         qualified_consultoria=1`
     );
     db.prepare(`UPDATE calendars SET active=0 WHERE owner_user_id=?`).run(userId);
     let synced = 0;
@@ -422,7 +424,7 @@ calendarRouter.post('/sync', async (req, res, next) => {
             (ev.created as string) || null,
             JSON.stringify(ev)
           );
-          if (ev.created) {
+          if (ev.created && isQualifiedConsultoriaTitle(String(ev.summary || ''))) {
             rememberLeadCreation.run(
               userId,
               String(ev.id || ''),
@@ -536,7 +538,7 @@ calendarRouter.post('/sync', async (req, res, next) => {
               (ev.created as string) || null,
               JSON.stringify(ev)
             );
-            if (ev.created) {
+            if (ev.created && isQualifiedConsultoriaTitle(String(ev.summary || ''))) {
               rememberLeadCreation.run(
                 userId,
                 String(ev.id || ''),
