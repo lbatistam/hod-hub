@@ -18,7 +18,7 @@ async function listPages() {
 
 function spawnPreview() {
   if (process.env.PREVIEW_URL) {
-    return Promise.resolve({ url: process.env.PREVIEW_URL.replace(/\/$/, ''), kill() {} });
+    return Promise.resolve({ url: process.env.PREVIEW_URL.replace(/\/$/, ''), async stop() {} });
   }
   if (!existsSync('dist/production/organograma.html')) {
     throw new Error('Build ausente. Execute pnpm run build antes do smoke.');
@@ -31,20 +31,40 @@ function spawnPreview() {
   });
   return new Promise((resolve, reject) => {
     let ready = false;
+    const startupTimeout = setTimeout(() => {
+      processHandle.kill('SIGKILL');
+      reject(new Error('Preview não iniciou em 15 segundos.'));
+    }, 15_000);
     const onData = chunk => {
       const match = chunk.toString().match(/Local:\s+(https?:\/\/[^\s]+)/);
       if (!match) {
         return;
       }
       ready = true;
+      clearTimeout(startupTimeout);
       processHandle.stdout.off('data', onData);
       setTimeout(
-        () => resolve({ url: match[1].replace(/\/$/, ''), kill: () => processHandle.kill() }),
+        () => resolve({
+          url: match[1].replace(/\/$/, ''),
+          async stop() {
+            if (processHandle.exitCode !== null) return;
+            processHandle.kill('SIGTERM');
+            await Promise.race([
+              new Promise(done => processHandle.once('exit', done)),
+              new Promise(done => setTimeout(() => {
+                processHandle.kill('SIGKILL');
+                done();
+              }, 2_000))
+            ]);
+            processHandle.stdout.destroy();
+          }
+        }),
         250
       );
     };
     processHandle.stdout.on('data', onData);
     processHandle.on('exit', code => {
+      clearTimeout(startupTimeout);
       if (!ready) {
         reject(new Error(`Preview encerrado antes de iniciar (${code}).`));
       }
@@ -99,7 +119,7 @@ async function main() {
     }
     console.log(`→ tudo certo: ${pages.length} páginas e ${checkedResources.size} recursos locais`);
   } finally {
-    preview.kill();
+    await preview.stop();
   }
 }
 
