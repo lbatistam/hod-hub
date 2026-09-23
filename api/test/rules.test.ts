@@ -75,6 +75,8 @@ describe('no-show / confirmação / fluxo (V1 hod-data)', () => {
       assert.equal(isNoShow({ manualStatus: s }), true, s);
     }
     assert.equal(isNoShow({ attendeeDeclined: true }), true);
+    assert.equal(isNoShow({ manualStatus: 'agendada', attendeeDeclined: true }), false);
+    assert.equal(isNoShow({ manualStatus: 'andamento', attendeeDeclined: true }), false);
     assert.equal(isNoShow({}), false);
   });
   it('finais forçam nao_confirmado', () => {
@@ -85,6 +87,8 @@ describe('no-show / confirmação / fluxo (V1 hod-data)', () => {
     assert.equal(eventFlow({ manualStatus: 'reagendar' }), 'reagendar');
     assert.equal(isNoShow({ manualStatus: 'reagendar' }), true);
     assert.equal(eventFlow({ manualStatus: 'cancelada' }), 'cancelada');
+    assert.equal(eventFlow({ manualStatus: 'agendada', attendeeDeclined: true }), 'proximas');
+    assert.equal(eventFlow({ manualStatus: 'andamento', attendeeDeclined: true }), 'andamento');
   });
 });
 

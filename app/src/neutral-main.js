@@ -229,8 +229,8 @@ const flowToColumn = {
   reagendado: 'no-show'
 };
 const columnToStatus = {
-  agendada: null,
-  acontecendo: null,
+  agendada: 'agendada',
+  acontecendo: 'andamento',
   compareceu: 'compareceu',
   'no-show': 'no_show',
   cancelada: 'cancelada'

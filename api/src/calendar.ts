@@ -914,7 +914,7 @@ calendarRouter.patch('/events/:id/state', express.json(), (req, res) => {
   const manualStatus = Object.hasOwn(body, 'manualStatus') ? (body.manualStatus as string | null) : existing.manualStatus;
   const confirmation = Object.hasOwn(body, 'confirmation') ? String(body.confirmation) : existing.confirmation;
   const notes = Object.hasOwn(body, 'notes') ? (body.notes as string | null) : existing.notes;
-  const allowedStatus = [null, 'compareceu', 'no_show', 'cancelada', 'reagendar', 'reagendado', 'over_sem_atendimento'];
+  const allowedStatus = [null, 'agendada', 'andamento', 'compareceu', 'no_show', 'cancelada', 'reagendar', 'reagendado', 'over_sem_atendimento'];
   const allowedConfirmation = ['neutro', 'confirmado', 'nao_confirmado'];
   if (!allowedStatus.includes(manualStatus as string) || !allowedConfirmation.includes(confirmation)) {
     res.status(400).json({ error: 'invalid_state' });

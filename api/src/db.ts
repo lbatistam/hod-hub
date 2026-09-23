@@ -81,7 +81,7 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS event_states (
     event_id INTEGER PRIMARY KEY REFERENCES events(id) ON DELETE CASCADE,
-    manual_status TEXT CHECK (manual_status IS NULL OR manual_status IN ('compareceu','no_show','cancelada','reagendar','reagendado','over_sem_atendimento')),
+    manual_status TEXT CHECK (manual_status IS NULL OR manual_status IN ('agendada','andamento','compareceu','no_show','cancelada','reagendar','reagendado','over_sem_atendimento')),
     confirmation TEXT NOT NULL DEFAULT 'neutro' CHECK (confirmation IN ('neutro','confirmado','nao_confirmado')),
     notes TEXT,
     updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
@@ -192,14 +192,16 @@ const eventStatesSql =
 if (
   !eventStatesSql.includes("'compareceu'") ||
   !eventStatesSql.includes("'over_sem_atendimento'") ||
-  !eventStatesSql.includes("'reagendado'")
+  !eventStatesSql.includes("'reagendado'") ||
+  !eventStatesSql.includes("'agendada'") ||
+  !eventStatesSql.includes("'andamento'")
 ) {
   db.exec(`
     DROP INDEX IF EXISTS idx_event_states_status;
     ALTER TABLE event_states RENAME TO event_states_before_attendance;
     CREATE TABLE event_states (
       event_id INTEGER PRIMARY KEY REFERENCES events(id) ON DELETE CASCADE,
-      manual_status TEXT CHECK (manual_status IS NULL OR manual_status IN ('compareceu','no_show','cancelada','reagendar','reagendado','over_sem_atendimento')),
+      manual_status TEXT CHECK (manual_status IS NULL OR manual_status IN ('agendada','andamento','compareceu','no_show','cancelada','reagendar','reagendado','over_sem_atendimento')),
       confirmation TEXT NOT NULL DEFAULT 'neutro' CHECK (confirmation IN ('neutro','confirmado','nao_confirmado')),
       notes TEXT,
       updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,

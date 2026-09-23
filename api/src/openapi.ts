@@ -85,7 +85,7 @@ export const openapiDocument = {
               schema: {
                 type: 'object',
                 properties: {
-                  manualStatus: { type: 'string', nullable: true, enum: ['compareceu', 'no_show', 'cancelada', 'reagendar', 'reagendado', 'over_sem_atendimento', null] },
+                  manualStatus: { type: 'string', nullable: true, enum: ['agendada', 'andamento', 'compareceu', 'no_show', 'cancelada', 'reagendar', 'reagendado', 'over_sem_atendimento', null] },
                   confirmation: { type: 'string', enum: ['neutro', 'confirmado', 'nao_confirmado'] },
                   notes: { type: 'string', nullable: true },
                 },

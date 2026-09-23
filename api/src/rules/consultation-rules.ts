@@ -5,6 +5,8 @@
 
 export type ManualStatus =
   | null
+  | 'agendada'
+  | 'andamento'
   | 'compareceu'
   | 'no_show'
   | 'cancelada'
@@ -29,7 +31,7 @@ const FINAL_NO_SHOW_STATUSES = ['no_show', 'cancelada', 'reagendar', 'reagendado
 export function isNoShow(event: ConsultationLike): boolean {
   if (event.isOverbooking) return false;
   // Correção manual de comparecimento absolve até evento riscado no Google.
-  if (event.manualStatus === 'compareceu') return false;
+  if (['agendada', 'andamento', 'compareceu'].includes(String(event.manualStatus))) return false;
   if (FINAL_NO_SHOW_STATUSES.includes(String(event.manualStatus))) return true;
   if (event.attendeeDeclined) return true;
   return false;
@@ -46,6 +48,8 @@ export function nextConfirmation(value: string): Confirmation {
 }
 
 export function eventFlow(event: ConsultationLike, now = new Date()): string {
+  if (event.manualStatus === 'agendada') return 'proximas';
+  if (event.manualStatus === 'andamento') return 'andamento';
   if (event.manualStatus === 'over_sem_atendimento') return 'reagendar';
   if (event.manualStatus === 'reagendar') return 'reagendar';
   if (event.manualStatus === 'reagendado') return 'reagendado';

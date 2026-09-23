@@ -473,7 +473,7 @@ export function isNoShow(event) {
   // Uma correção manual explícita de comparecimento pode desfazer um falso
   // positivo. Cancelar ou reagendar localmente, porém, não pode esconder que
   // o dono da agenda recusou o evento no Google.
-  if (event.manualStatus === 'compareceu') {
+  if (['agendada', 'andamento', 'compareceu'].includes(event.manualStatus)) {
     return false;
   }
   if (['no_show', 'cancelada', 'reagendar', 'reagendado'].includes(event.manualStatus)) {
@@ -505,6 +505,14 @@ export function attendanceStatus(event) {
 }
 
 export function eventFlow(event, now = new Date()) {
+  // Uma decisão administrativa explícita prevalece sobre horário e sobre o
+  // risco automático vindo do Google. O sinal de recusado continua no card.
+  if (event.manualStatus === 'agendada') {
+    return 'proximas';
+  }
+  if (event.manualStatus === 'andamento') {
+    return 'andamento';
+  }
   if (event.manualStatus === 'over_sem_atendimento') {
     return 'reagendar';
   }
