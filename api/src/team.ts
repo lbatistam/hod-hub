@@ -5,7 +5,7 @@ import { db } from './db.js';
 import { requireUser } from './auth.js';
 import { configuredClosers } from './rules/closers.js';
 
-export const teamRouter = express.Router();
+export const teamRouter: express.Router = express.Router();
 teamRouter.use(requireUser);
 
 teamRouter.get('/', (req, res) => {

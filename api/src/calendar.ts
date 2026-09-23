@@ -26,7 +26,7 @@ function presentEvent(row: Record<string, unknown>) {
   return { ...row, presentation: operationalPresentation({ ...row, isOverbooking: Boolean(row.isOverbooking) }) };
 }
 
-export const calendarRouter = express.Router();
+export const calendarRouter: express.Router = express.Router();
 calendarRouter.use(requireUser);
 
 type AuthedRequest = express.Request & { user: { id: number; email: string } };

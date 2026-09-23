@@ -3,7 +3,7 @@ import express from 'express';
 import { execFile } from 'node:child_process';
 import { requireUser } from './auth.js';
 
-export const notificationsRouter = express.Router();
+export const notificationsRouter: express.Router = express.Router();
 notificationsRouter.use(requireUser);
 
 notificationsRouter.post('/macos', async (req, res, next) => {

@@ -14,7 +14,7 @@ import {
   sameLead,
 } from './rules/consultation-rules.js';
 
-export const summaryRouter = express.Router();
+export const summaryRouter: express.Router = express.Router();
 summaryRouter.use(requireUser);
 
 interface EventRow {

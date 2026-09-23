@@ -8,7 +8,7 @@ import { requireUser } from './auth.js';
 import { broadcast } from './stream.js';
 import { config, parseAppSource } from './config.js';
 
-export const settingsRouter = express.Router();
+export const settingsRouter: express.Router = express.Router();
 settingsRouter.use(requireUser);
 
 type Authed = express.Request & { user: { id: number } };

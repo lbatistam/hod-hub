@@ -7,7 +7,7 @@ import { config } from './config.js';
 import { db } from './db.js';
 import { decrypt, encrypt, hashToken, randomToken } from './security.js';
 
-export const authRouter = express.Router();
+export const authRouter: express.Router = express.Router();
 export const sessionCookie = 'hod_session';
 const googleScopes = ['openid', 'email', 'profile', 'https://www.googleapis.com/auth/calendar'];
 

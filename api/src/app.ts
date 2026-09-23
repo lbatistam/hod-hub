@@ -16,7 +16,7 @@ import { requireUser } from './auth.js';
 import { recordServerError, requestId } from './error-log.js';
 import { openapiDocument } from './openapi.js';
 
-export function createApp() {
+export function createApp(): express.Express {
   const app = express();
   app.disable('x-powered-by');
   app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));

@@ -5,7 +5,7 @@ import { requireAdmin } from './auth.js';
 import { broadcast } from './stream.js';
 import { parseAppSource } from './config.js';
 
-export const adminRouter = express.Router();
+export const adminRouter: express.Router = express.Router();
 adminRouter.use(requireAdmin);
 
 adminRouter.get('/users', (req, res) => {

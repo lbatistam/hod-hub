@@ -4,7 +4,7 @@ import express from 'express';
 import { db } from './db.js';
 import { requireUser } from './auth.js';
 
-export const historyRouter = express.Router();
+export const historyRouter: express.Router = express.Router();
 historyRouter.use(requireUser);
 
 historyRouter.get('/', (req, res, next) => {
