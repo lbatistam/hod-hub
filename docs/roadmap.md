@@ -9,5 +9,4 @@
 - automatizar validação integrada em ambiente de teste;
 - publicar capturas anonimizadas da interface.
 
-O roadmap descreve direção, não promessa de prazo. Mudanças incompatíveis serão tratadas como release quando houver decisão explícita.
-
+O roadmap descreve direção, não promessa de prazo. O HOD Hub permanece uma única base ativa; marcos maiores podem receber uma tag de Git quando houver decisão explícita, sem abrir versões paralelas.

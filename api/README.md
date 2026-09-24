@@ -17,7 +17,7 @@ npm start
 
 [Saúde](http://localhost:8877/api/v1/health) · [OpenAPI](http://localhost:8877/api/v1/openapi.json).
 
-Preserve o `.env` existente, banco, sessões e tokens. Não copie configuração da V1 nem execute migração para iniciar um cliente novo. O banco operacional permanece em `data/hod-platform.sqlite`.
+Preserve o `.env` existente, banco, sessões e tokens. Não copie configurações históricas nem execute uma migração ao iniciar um cliente novo. O banco operacional permanece em `data/hod-platform.sqlite`.
 
 ## Arquitetura
 
@@ -37,11 +37,11 @@ test/                     testes isolados, sem dados reais
 docs/architecture.md      detalhes da arquitetura
 ```
 
-Versão do serviço: 1.0.0.
+Este é o único serviço ativo do HOD Hub. Números de build, schema e compatibilidade não representam produtos ou APIs paralelas.
 
 ## Contrato dos clientes
 
-`X-HOD-App: web-v1`. Identificadores históricos HeroUI/ShadCN continuam preservados na auditoria.
+`X-HOD-App: web-v1` é um identificador de protocolo preservado para compatibilidade. Ele não define uma versão pública do HOD Hub. Identificadores históricos HeroUI/ShadCN continuam preservados na auditoria.
 
 - Autenticação: cookie HttpOnly `hod_session` ou Bearer legado.
 - Login com `return_to` local entrega ticket único. `POST auth/native-exchange` com `mode:web` cria cookie e retorna apenas usuário; modo legado mantém `{token,user}`.

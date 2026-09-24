@@ -9,6 +9,8 @@
 
 O HOD Hub transforma dados do Google Agenda em uma visão operacional única. O projeto reúne um frontend web responsivo e uma API central responsável por autenticação, calendário, regras de negócio, histórico, disponibilidade, resumo diário, Analytics e atualizações em tempo real.
 
+> **Produto único:** existe apenas HOD Hub. A branch `main` é a base ativa e evolutiva; “V1” e “V2” são apenas referências informais ao escopo de uma atualização, nunca versões paralelas do produto.
+
 ## O que o projeto entrega
 
 - **Início:** visão executiva do dia, próxima consultoria, pendências e atalhos.
@@ -134,6 +136,7 @@ Este repositório não inclui banco operacional, tokens OAuth, cookies, logs, ba
 - [API e integração](docs/api.md)
 - [Validação](docs/validation.md)
 - [Roadmap](docs/roadmap.md)
+- [Identidade do produto](docs/product-identity.md)
 - [Como contribuir](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
 
@@ -144,4 +147,3 @@ O frontend oficial usa a direção visual Neutral Modern, possui temas claro e e
 ## Licença
 
 Distribuído sob a licença [MIT](LICENSE).
-
