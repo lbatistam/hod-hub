@@ -206,22 +206,21 @@ button{font:inherit;cursor:pointer}
 <div class="sync-card" data-od-id="status-agenda"><span class="sync-dot" aria-hidden="true"></span><div><p><strong>Google Agenda sincronizada</strong></p><p class="meta">Atualizado às <span id="sync-time">09:42</span> · 2 agendas</p></div></div>
 <button class="theme-toggle" data-od-id="alternar-tema" type="button" aria-pressed="false" aria-label="Alternar entre modo claro e escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 13.5A8 8 0 0 1 10.5 4 8 8 0 1 0 20 13.5Z"/></svg><span>Modo escuro</span></button>
 <script>(function(){var b=document.currentScript.previousElementSibling;function paint(){var d=document.documentElement.dataset.theme==='dark';b.setAttribute('aria-pressed',d?'true':'false');b.querySelector('span').textContent=d?'Modo claro':'Modo escuro'}b.addEventListener('click',function(){var d=document.documentElement.dataset.theme!=='dark';if(d){document.documentElement.dataset.theme='dark'}else{document.documentElement.removeAttribute('data-theme')}try{localStorage.setItem('hod-theme',d?'dark':'light')}catch(e){}paint();var t=document.getElementById('toast');if(t){t.textContent=d?'Modo escuro ativado.':'Modo claro ativado.';t.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(function(){t.classList.remove('show')},2200)}});paint()})();</script>
-<div class="admin" data-od-id="perfil-admin"><div class="avatar" aria-hidden="true">DM</div><div style="min-width:0"><div class="admin-name">Diego Martins</div><div class="admin-role">Administrador · Operação</div></div></div>
+<div class="admin" data-od-id="perfil-admin"><div class="avatar" aria-hidden="true">LB</div><div style="min-width:0"><div class="admin-name">Leandro Batista</div><div class="admin-role">Administrador · Operação</div></div></div>
 </aside>
 <main class="main" id="conteudo">
-<span class="demo-note" data-od-id="aviso-demo">Demonstração · arraste cards entre colunas para mover a situação</span>
 <header class="topbar" data-od-id="cabecalho-organograma">
 <div><p class="eyebrow">HOD Hub · Grade do dia</p><h1 class="greeting">Organograma do Dia</h1><p class="date-line" id="date-line">terça-feira, 22 de setembro de 2026 · <span class="num">18</span> consultorias · 3 closers em operação</p></div>
-<div class="top-actions"><button class="btn btn-secondary" data-od-id="btn-sincronizar" id="btn-sync" type="button">Sincronizar agora</button><button class="btn btn-primary" data-od-id="btn-nova-consultoria" type="button">Nova consultoria</button></div>
+<div class="top-actions"><button class="btn btn-secondary icon-button" data-od-id="btn-sincronizar" id="btn-sync" type="button" title="Sincronizar agora">Sincronizar agora</button><button class="btn btn-primary" data-od-id="btn-nova-consultoria" type="button">Nova consultoria</button></div>
 </header>
 <section data-od-id="controle-data" aria-label="Controle de data">
 <div class="datebar operational-datebar"><div class="nav-btns"><button class="arrow-btn" id="prev-day" type="button" aria-label="Dia anterior">‹</button><button class="arrow-btn" id="next-day" type="button" aria-label="Próximo dia">›</button><button class="today-btn" id="today-btn" type="button">Hoje</button></div><div class="date-current"><strong id="selected-date">22 de setembro de 2026</strong><span>Grade de consultorias do dia</span></div><label class="availability-date-picker" for="board-date"><span>Ir para uma data</span><input id="board-date" type="date" aria-label="Escolher uma data no calendário" /></label></div>
 </section>
-<section class="toolbar" data-od-id="filtros-organograma" aria-label="Busca e filtros">
+<section class="toolbar filter-toolbar" data-od-id="filtros-organograma" aria-label="Busca e filtros">
 <label class="search" data-od-id="busca-organograma"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="campo-busca" type="search" placeholder="Buscar por cliente ou telefone…" aria-label="Buscar por cliente ou telefone" /></label>
-<div class="field"><label for="f-closer">Closer</label><select class="select" id="f-closer" data-od-id="filtro-closer"><option value="todos">Todos os closers</option><option value="Rafael Lima">Rafael Lima</option><option value="Camila Sousa">Camila Sousa</option><option value="Thiago Abreu">Thiago Abreu</option></select></div>
-<div class="field"><label for="f-situacao">Situação</label><select class="select" id="f-situacao" data-od-id="filtro-situacao"><option value="todas">Todas as situações</option><option value="agendada">Agendada</option><option value="acontecendo">Acontecendo</option><option value="compareceu">Compareceu</option><option value="no-show">No-show</option><option value="cancelada">Cancelada</option></select></div>
-<div class="field"><label for="f-confirm">Confirmação</label><select class="select" id="f-confirm" data-od-id="filtro-confirmacao"><option value="todas">Todas</option><option value="confirmada">Confirmada</option><option value="aguardando">Aguardando</option><option value="sem-retorno">Sem retorno</option></select></div>
+<div class="segmented-control confirmation-filter" role="group" aria-label="Filtrar por confirmação"><button type="button" aria-pressed="true" data-confirm-value="todas">Todas</button><button type="button" aria-pressed="false" data-confirm-value="confirmada">Confirmadas</button><button type="button" aria-pressed="false" data-confirm-value="neutro">Pendentes</button><button type="button" aria-pressed="false" data-confirm-value="nao-confirmada">Não confirmadas</button></div>
+<button class="icon-button filter-toggle" id="filter-toggle" type="button" aria-expanded="false" aria-controls="filter-panel" aria-label="Abrir filtros" title="Filtros"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span class="filter-count" id="filter-count" hidden>0</span></button>
+<div class="filter-panel" id="filter-panel" hidden><div class="field"><label for="f-closer">Closer</label><select class="select" id="f-closer" data-od-id="filtro-closer"><option value="todos">Todos os closers</option></select></div><div class="field"><label for="f-situacao">Situação</label><select class="select" id="f-situacao" data-od-id="filtro-situacao"><option value="todas">Todas as situações</option><option value="agendada">Agendada</option><option value="acontecendo">Acontecendo</option><option value="compareceu">Compareceu</option><option value="no-show">No-show</option><option value="cancelada">Cancelada</option></select></div><select id="f-confirm" hidden aria-hidden="true"><option value="todas" selected></option><option value="confirmada"></option><option value="neutro"></option><option value="nao-confirmada"></option></select><button class="btn btn-secondary clear-filters" id="clear-filters" type="button">Limpar filtros</button></div>
 </section>
 <section data-od-id="kanban" aria-label="Kanban de consultorias">
 <div class="kanban-wrap"><div class="kanban" id="kanban">
@@ -253,10 +252,30 @@ button{font:inherit;cursor:pointer}
 <div class="col-empty">Nenhum card neste filtro.</div></div>
 </div></div>
 </section>
-<footer class="pagefoot" data-od-id="rodape"><span><a href="inicio.html" data-od-id="voltar-inicio">← Voltar ao Início</a> · © HOD Hub · Operação interna</span><span class="meta">Fonte: Google Agenda · protótipo navegável · Organograma v1</span></footer>
+<footer class="pagefoot" data-od-id="rodape"><span><a href="inicio.html" data-od-id="voltar-inicio">← Voltar ao Início</a> · © HOD Hub · Operação interna</span><span class="meta">Fonte: Google Agenda · dados da HOD Platform</span></footer>
 </main>
 </div>
-<div class="modal-back" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal"><h2 id="modal-title">Detalhes</h2><p class="meta" id="modal-sub">Ficha da consultoria</p><div class="detail-grid"><div><span>Cliente</span><strong id="d-cliente">—</strong></div><div><span>Horário</span><strong id="d-hora">—</strong></div><div><span>Closer</span><strong id="d-closer">—</strong></div><div><span>Telefone</span><strong id="d-fone">—</strong></div></div><p style="font-size:14px;color:var(--muted)" id="d-obs">Histórico de confirmação e observações da operação aparecem aqui nesta demonstração.</p><div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap"><button class="btn btn-secondary" type="button" id="modal-close">Fechar</button><button class="btn btn-primary" type="button" id="modal-meet">Abrir Google Meet</button></div></div></div>
+<div class="modal-back" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal consult-detail">
+    <div class="detail-header">
+      <h2 id="modal-title">Detalhes</h2>
+      <button class="detail-close icon-button" type="button" id="modal-close" aria-label="Fechar detalhes" title="Fechar detalhes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg></button>
+    </div>
+    <div class="detail-chips" id="detail-chips"></div>
+    <div class="detail-grid">
+      <div class="detail-field"><span>Data</span><strong id="d-date">—</strong></div>
+      <div class="detail-field"><span>Horário</span><strong id="d-hora">—</strong></div>
+      <div class="detail-field"><span>Closer</span><strong class="detail-person-tag" id="d-closer">—</strong></div>
+      <div class="detail-field"><span>Telefone</span><strong id="d-fone">—</strong></div>
+    </div>
+    <section class="detail-notes" id="detail-notes" hidden><h3>Observações</h3><p id="d-obs"></p></section>
+    <div class="detail-actions">
+      <button class="btn btn-secondary" type="button" id="modal-copy"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>Copiar telefone</button>
+      <button class="btn btn-primary" type="button" id="modal-meet"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>Abrir Google Meet</button>
+    </div>
+    <div class="detail-status-actions" id="detail-status-actions" aria-label="Ações da consultoria"></div>
+  </div>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="module" src="/src/neutral-main.js"></script>

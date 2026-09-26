@@ -132,7 +132,7 @@ button{font:inherit;cursor:pointer}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media (max-width:920px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border)}.sidenav{flex-direction:row;overflow:auto;padding-bottom:12px}.sidenav-label,.sync-card,.theme-toggle{display:none}.nav-link{white-space:nowrap;border-left:0;border-bottom:3px solid transparent;border-radius:0}.nav-link[aria-current="page"]{border-bottom-color:var(--accent)}.main{padding:16px 16px 48px}.row{flex-wrap:wrap}}
 </style>
-<script>(function(){try{var t=localStorage.getItem('hod-theme');if(t==='dark'){document.documentElement.dataset.theme='dark'}else if(t==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.dataset.theme='dark'}}catch(e){}try{var z=localStorage.getItem('hod-zoom');if(z){document.documentElement.style.zoom=z}}catch(e){}})();</script>
+<script>(function(){try{var t=localStorage.getItem('hod-theme');if(t==='dark'){document.documentElement.dataset.theme='dark'}else if(t==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.dataset.theme='dark'}}catch(e){}try{var z=localStorage.getItem('hod-zoom');if(z&&z!=='100%'){document.documentElement.style.zoom=z}}catch(e){}})();</script>
 </head>
 <body data-page="hod-settings">
 <div class="app">
@@ -150,7 +150,7 @@ button{font:inherit;cursor:pointer}
 <div class="sync-card" data-od-id="status-agenda"><span class="sync-dot" aria-hidden="true"></span><div><p><strong>Google Agenda sincronizada</strong></p><p class="meta">Atualizado às <span id="sync-time">09:42</span> · 2 agendas</p></div></div>
 <button class="theme-toggle" data-od-id="alternar-tema" type="button" aria-pressed="false" aria-label="Alternar entre modo claro e escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 13.5A8 8 0 0 1 10.5 4 8 8 0 1 0 20 13.5Z"/></svg><span>Modo escuro</span></button>
 <script>(function(){var b=document.currentScript.previousElementSibling;function paint(){var d=document.documentElement.dataset.theme==='dark';b.setAttribute('aria-pressed',d?'true':'false');b.querySelector('span').textContent=d?'Modo claro':'Modo escuro'}b.addEventListener('click',function(){var d=document.documentElement.dataset.theme!=='dark';if(d){document.documentElement.dataset.theme='dark'}else{document.documentElement.removeAttribute('data-theme')}try{localStorage.setItem('hod-theme',d?'dark':'light')}catch(e){}paint();var t=document.getElementById('toast');if(t){t.textContent=d?'Modo escuro ativado.':'Modo claro ativado.';t.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(function(){t.classList.remove('show')},2200)}});paint()})();</script>
-<div class="admin" data-od-id="perfil-admin"><div class="avatar" aria-hidden="true">DM</div><div style="min-width:0"><div class="admin-name">Diego Martins</div><div class="admin-role">Administrador · Operação</div></div></div>
+<div class="admin" data-od-id="perfil-admin"><div class="avatar" aria-hidden="true">LB</div><div style="min-width:0"><div class="admin-name">Leandro Batista</div><div class="admin-role">Administrador · Operação</div></div></div>
 </aside>
 <main class="main" id="conteudo">
 <header class="topbar" data-od-id="cabecalho-config">
@@ -165,7 +165,7 @@ button{font:inherit;cursor:pointer}
 <h2>Google Agenda</h2><p class="card-desc">Sincronização das consultorias com o Google Agenda.</p>
 <div class="row"><div class="conn"><span class="conn-ic" aria-hidden="true">Ag</span><div class="row-info"><div class="row-title">Google Agenda</div><div class="row-sub">2 agendas · <span class="meta">última sincronização às <span id="last-sync">09:42</span></span></div></div></div><span class="badge badge-success" id="badge-agenda"><span class="badge-dot"></span>Conectado</span><button class="btn btn-secondary" type="button" id="btn-sync" data-od-id="btn-sincronizar-agora">Sincronizar agora</button></div>
 </section>
-<footer class="pagefoot" data-od-id="rodape"><span><a href="inicio.html">← Voltar ao Início</a> · © HOD Hub · Operação interna</span><span class="meta">Configurações v1</span></footer>
+<footer class="pagefoot" data-od-id="rodape"><span><a href="inicio.html">← Voltar ao Início</a> · © HOD Hub · Operação interna</span><span class="meta">Preferências da HOD Platform</span></footer>
 </main>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

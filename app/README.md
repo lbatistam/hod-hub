@@ -55,6 +55,7 @@ data/                    logs locais do launcher
 - Títulos com pequenos erros de digitação em “Consultoria” devem continuar reconhecidos.
 - Horários e datas são calculados em `America/Sao_Paulo`.
 - O Organograma usa Kanban como visão única da operação.
+- Busca, confirmação e filtros operacionais seguem um padrão compartilhado: confirmação em controle segmentado e filtros complementares no botão de filtro.
 
 Antes de alterar o app, execute lint, teste, build e smoke.
 

@@ -344,12 +344,11 @@ button{font:inherit;cursor:pointer}
 <button class="theme-toggle" data-od-id="alternar-tema" type="button" aria-pressed="false" aria-label="Alternar entre modo claro e escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 13.5A8 8 0 0 1 10.5 4 8 8 0 1 0 20 13.5Z"/></svg><span>Modo escuro</span></button>
 <script>(function(){var b=document.currentScript.previousElementSibling;function paint(){var d=document.documentElement.dataset.theme==='dark';b.setAttribute('aria-pressed',d?'true':'false');b.querySelector('span').textContent=d?'Modo claro':'Modo escuro'}b.addEventListener('click',function(){var d=document.documentElement.dataset.theme!=='dark';if(d){document.documentElement.dataset.theme='dark'}else{document.documentElement.removeAttribute('data-theme')}try{localStorage.setItem('hod-theme',d?'dark':'light')}catch(e){}paint();var t=document.getElementById('toast');if(t){t.textContent=d?'Modo escuro ativado.':'Modo claro ativado.';t.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(function(){t.classList.remove('show')},2200)}});paint()})();</script>
 <div class="admin" data-od-id="perfil-admin">
-<div class="avatar" aria-hidden="true">DM</div>
-<div style="min-width:0"><div class="admin-name">Diego Martins</div><div class="admin-role">Administrador · Operação</div></div>
+<div class="avatar" aria-hidden="true">LB</div>
+<div style="min-width:0"><div class="admin-name">Leandro Batista</div><div class="admin-role">Administrador · Operação</div></div>
 </div>
 </aside>
 <main class="main" id="conteudo">
-<span class="demo-note" data-od-id="aviso-demo">Demonstração · dados de exemplo para validar o fluxo do dia</span>
 <header class="topbar" data-od-id="cabecalho-dia">
 <div>
 <p class="eyebrow">HOD Hub · Operação de hoje</p>
@@ -397,11 +396,11 @@ button{font:inherit;cursor:pointer}
 </section>
 <section class="list-card" data-od-id="proximas-consultorias" aria-label="Próximas consultorias do dia">
 <div class="section-head"><h2>Próximas do dia</h2><a href="organograma.html" data-od-id="link-ver-organograma">Ver organograma</a></div>
-<div class="filters" role="group" aria-label="Filtrar por status">
-<button class="chip" type="button" aria-pressed="true" data-filter="todas" data-od-id="filtro-todas">Todas</button>
-<button class="chip" type="button" aria-pressed="false" data-filter="confirmada" data-od-id="filtro-confirmadas">Confirmadas</button>
-<button class="chip" type="button" aria-pressed="false" data-filter="pendente" data-od-id="filtro-pendentes">Pendentes</button>
-<button class="chip" type="button" aria-pressed="false" data-filter="livre" data-od-id="filtro-livres">Livres</button>
+<div class="segmented-control home-status-filter" role="group" aria-label="Filtrar próximas consultorias por confirmação">
+<button type="button" aria-pressed="true" data-filter="todas" data-od-id="filtro-todas">Todas</button>
+<button type="button" aria-pressed="false" data-filter="confirmado" data-od-id="filtro-confirmadas">Confirmadas</button>
+<button type="button" aria-pressed="false" data-filter="neutro" data-od-id="filtro-pendentes">Pendentes</button>
+<button type="button" aria-pressed="false" data-filter="nao_confirmado" data-od-id="filtro-nao-confirmadas">Não confirmadas</button>
 </div>
 <div id="lista-consultas">
 <div class="consulta" data-status="confirmada" data-search="marina duarte rafael lima 14:30"><div class="hora">14:30<small>30 min</small></div><div class="consulta-main"><div class="consulta-cliente">Marina Duarte</div><div class="consulta-sub">Rafael Lima · Meet Sala 03</div></div><div class="consulta-side"><span class="badge badge-success"><span class="badge-dot"></span>Confirmada</span></div></div>
@@ -444,7 +443,7 @@ button{font:inherit;cursor:pointer}
 </section>
 </div>
 </div>
-<footer class="pagefoot" data-od-id="rodape"><span>© HOD Hub · Operação interna</span><span class="meta">Fonte: Google Agenda · protótipo navegável · Início v1</span></footer>
+<footer class="pagefoot" data-od-id="rodape"><span>© HOD Hub · Operação interna</span><span class="meta">Fonte: Google Agenda · dados da HOD Platform</span></footer>
 </main>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

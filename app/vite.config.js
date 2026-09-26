@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const HOD_RELEASE = 'r38';
+const HOD_RELEASE = 'r41';
 
 // Auto-detect every entry HTML in production/ and register it as a Rollup
 // input. Uma página nova entra no build ao ser adicionada a production/.
@@ -63,6 +63,12 @@ function hodMetadataPlugin() {
         // before the body renders so dark mode never flashes light.
         const prePaint = `<script>(function(){try{var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var theme=t||(d?'dark':'light');document.documentElement.setAttribute('data-theme',theme);}catch(e){}})();</script>`;
         out = out.replace(/<\/head>/i, `${prePaint}\n</head>`);
+
+        // Never paint the legacy demonstration markup while the real API loads.
+        if (!/data-page=["']hod-login["']/.test(out)) {
+          const liveBoot = `<style>html[data-hod-boot="pending"] main,html[data-hod-boot="pending"] .admin{visibility:hidden}.sync-card{display:none!important}html[data-hod-boot="pending"] body::after{content:"Carregando dados do Google Agenda…";position:fixed;inset:45% 0 auto;text-align:center;color:#64748b;font:500 14px system-ui;pointer-events:none}</style><script>document.documentElement.dataset.hodBoot='pending';</script>`;
+          out = out.replace(/<\/head>/i, `${liveBoot}\n</head>`);
+        }
 
         return out;
       }

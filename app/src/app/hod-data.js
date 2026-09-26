@@ -1,5 +1,6 @@
 // Cliente único da HOD Platform. O frontend não mantém banco nem API próprios.
-const API_ROOT = 'http://localhost:8877/api/v1';
+const apiHost = window.location.hostname === '127.0.0.1' ? '127.0.0.1' : 'localhost';
+const API_ROOT = `http://${apiHost}:8877/api/v1`;
 const PLATFORM_TOKEN_KEY = 'hod-platform-token:v1';
 const EVENT_CACHE_PREFIX = 'hod-events:v1:';
 const backgroundSyncs = new Map();
@@ -249,16 +250,12 @@ export async function getMe() {
   if (cachedUser) {
     return cachedUser;
   }
-  try {
-    const stored = JSON.parse(sessionStorage.getItem('hod-user:v1') || 'null');
-    if (stored?.user) {
-      cachedUser = stored.user;
-      return cachedUser;
-    }
-  } catch {
-    // A sessão da API continua sendo a fonte oficial.
-  }
   const data = await api('/auth/me');
+  if (!data?.user) {
+    sessionStorage.removeItem('hod-user:v1');
+    location.assign('/production/login.html');
+    throw new Error('Entre com sua conta Google para continuar.');
+  }
   cachedUser = data.user;
   try {
     sessionStorage.setItem('hod-user:v1', JSON.stringify({ user: cachedUser }));
@@ -266,6 +263,14 @@ export async function getMe() {
     // Cache opcional.
   }
   return cachedUser;
+}
+
+export async function getCalendarStatus() {
+  return api('/calendar/status');
+}
+
+export async function getCalendars() {
+  return api('/calendar/calendars');
 }
 
 export async function loadEvents(startDate, endDate = startDate, { includeFormer = false } = {}) {

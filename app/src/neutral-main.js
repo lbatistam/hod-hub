@@ -12,6 +12,8 @@ import {
   formatDate,
   formatDateInSaoPaulo,
   formatTime,
+  getCalendarStatus,
+  getCalendars,
   getMe,
   isNoShow,
   loadAvailability,
@@ -22,12 +24,22 @@ import {
   syncEvents,
   updateEventState
 } from './app/hod-data.js';
+import {
+  animateButtonFeedback,
+  animateChartBars,
+  animateDataReady,
+  animateLayout,
+  animatePanel,
+  animateToast,
+  captureLayout
+} from './app/hod-motion.js';
 import './neutral-global.css';
 
 const page = document.body.dataset.page;
 let events = [];
 let dailyCreatedEvents = [];
 let activeDate = selectedDate();
+let organogramaMutationInFlight = false;
 
 function toast(message) {
   const node = document.getElementById('toast');
@@ -35,9 +47,11 @@ function toast(message) {
     return;
   }
   node.textContent = message;
-  node.classList.add('show');
+  animateToast(node, true);
   clearTimeout(window.__hodToast);
-  window.__hodToast = setTimeout(() => node.classList.remove('show'), 2400);
+  window.__hodToast = setTimeout(() => {
+    animateToast(node, false);
+  }, 2400);
 }
 
 function nowLabel() {
@@ -46,13 +60,15 @@ function nowLabel() {
   );
 }
 
-const syncIcon = '<svg class="sync-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6.1 8.5A7 7 0 0 1 18.5 7M17.9 15.5A7 7 0 0 1 5.5 17"/></svg>';
+const syncIcon = '<svg class="sync-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 0-15.2-6.5L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 15.2 6.5L21 16"/><path d="M16 16h5v5"/></svg>';
 
 function decorateSyncButton(button = document.getElementById('btn-sync')) {
   if (!button || button.querySelector('.sync-icon')) {
     return button;
   }
-  button.innerHTML = `${syncIcon}<span>Sincronizar agora</span>`;
+  button.classList.add('icon-button');
+  button.title = 'Sincronizar agora';
+  button.innerHTML = `${syncIcon}<span class="sr-only">Sincronizar agora</span>`;
   button.setAttribute('aria-label', 'Sincronizar dados agora');
   return button;
 }
@@ -122,6 +138,89 @@ function setText(selector, value) {
   }
 }
 
+const focusableSelector = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])'
+].join(',');
+
+function openOverlay(overlay, trigger = document.activeElement) {
+  if (!overlay) {
+    return;
+  }
+  overlay.__returnFocus = trigger instanceof HTMLElement ? trigger : null;
+  overlay.classList.add('open');
+  document.body.classList.add('has-overlay');
+  requestAnimationFrame(() => overlay.querySelector(focusableSelector)?.focus());
+}
+
+function closeOverlay(overlay) {
+  if (!overlay?.classList.contains('open')) {
+    return;
+  }
+  overlay.classList.remove('open');
+  document.body.classList.remove('has-overlay');
+  overlay.__returnFocus?.focus();
+  overlay.__returnFocus = null;
+}
+
+function bindOverlay(overlay, closeControl) {
+  if (!overlay) {
+    return;
+  }
+  closeControl?.addEventListener('click', () => closeOverlay(overlay));
+  overlay.addEventListener('click', event => {
+    if (event.target === overlay) {
+      closeOverlay(overlay);
+    }
+  });
+  overlay.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeOverlay(overlay);
+      return;
+    }
+    if (event.key !== 'Tab') {
+      return;
+    }
+    const focusable = [...overlay.querySelectorAll(focusableSelector)];
+    if (!focusable.length) {
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable.at(-1);
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+}
+
+function bindSharedMotion() {
+  const acknowledge = event => {
+    if (!(event.target instanceof Element)) {
+      return;
+    }
+    const control = event.target.closest('button, a[href], [role="button"], [role="tab"]');
+    if (!control || control.matches(':disabled, [aria-disabled="true"]')) {
+      return;
+    }
+    animateButtonFeedback(control);
+  };
+  document.addEventListener('pointerdown', acknowledge);
+  document.addEventListener('keydown', event => {
+    if (!event.repeat && (event.key === 'Enter' || event.key === ' ')) {
+      acknowledge(event);
+    }
+  });
+}
+
 function showError(error) {
   toast(error?.message || 'Não foi possível carregar os dados.');
 }
@@ -172,9 +271,14 @@ async function common() {
   });
   document.querySelectorAll('.demo-note').forEach(node => node.remove());
   document.querySelectorAll('.brand-mark').forEach(mark => {
-    mark.innerHTML = '<img src="/images/hod-hub-app-icon.png" alt="">';
+    mark.textContent = 'H';
   });
   document.querySelectorAll('.brand-sub').forEach(node => node.remove());
+  document.querySelectorAll('.nav-link').forEach(link => {
+    const label = link.textContent.replace(/\d+$/u, '').trim();
+    link.title = label;
+    link.setAttribute('aria-label', label);
+  });
   document.querySelectorAll('.admin-role').forEach(node => {
     node.textContent = 'Administrador';
   });
@@ -200,24 +304,115 @@ function card(event) {
         ? 'badge-danger'
         : 'badge-warn';
   const phone = event.phone || 'Sem telefone cadastrado';
+  const duration = event.startsAt && event.endsAt
+    ? Math.max(0, Math.round((Date.parse(event.endsAt) - Date.parse(event.startsAt)) / 60000))
+    : 0;
   const icon = {
-    confirm: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>',
-    decline: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>',
-    noShow:
-      '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>',
     copy: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>',
     meet: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>',
-    details:
-      '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>'
+    user: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M5.5 20c.4-3.2 2.7-5 6.5-5s6.1 1.8 6.5 5"/></svg>'
   };
-  return `<article class="kcard${event.attendeeDeclined ? ' lead-declined' : ''}" draggable="true" data-event-id="${event.id}" data-closer="${escapeHtml(eventOwnerLabel(event))}" data-confirm="${escapeHtml(confirmation)}" data-search="${escapeHtml(`${event.leadName} ${event.phone || ''} ${eventOwnerLabel(event)}`.toLowerCase())}">
-    <div class="kcard-top"><span class="ktime">${formatTime(event.startsAt)} <small>· 50 min</small></span><span class="kbadges"><span class="badge ${badgeClass}"><span class="badge-dot"></span>${confirmationLabel(confirmation)}</span>${event.isOverbooking ? '<span class="badge badge-over">OVER</span>' : ''}</span></div>
-    <div class="kidentity"><div class="kclient">${escapeHtml(event.leadName)}</div><div class="kmeta"><span>Closer</span><strong>${escapeHtml(eventOwnerLabel(event))}</strong></div></div>
+  return `<article class="kcard${event.attendeeDeclined ? ' lead-declined' : ''}" draggable="true" data-flip-id="consultoria-${event.id}" data-event-id="${event.id}" data-closer="${escapeHtml(eventOwnerLabel(event))}" data-confirm="${escapeHtml(confirmation)}" data-search="${escapeHtml(`${event.leadName} ${event.phone || ''} ${eventOwnerLabel(event)}`.toLowerCase())}">
+    <div class="kcard-top"><span class="ktime">${formatTime(event.startsAt)}${duration ? ` <small>· ${duration} min</small>` : ''}</span><span class="kbadges"><span class="badge ${badgeClass}"><span class="badge-dot"></span>${confirmationLabel(confirmation)}</span>${event.isOverbooking ? '<span class="badge badge-over">OVER</span>' : ''}</span></div>
+    <div class="kidentity"><div class="kclient">${escapeHtml(event.leadName)}</div><span class="closer-tag" title="Closer: ${escapeHtml(eventOwnerLabel(event))}" aria-label="Closer: ${escapeHtml(eventOwnerLabel(event))}">${icon.user}<strong>${escapeHtml(eventOwnerLabel(event))}</strong></span></div>
     <div class="kphone-row"><span class="kphone">${escapeHtml(phone)}</span><button class="icon-action" type="button" data-act="copy" aria-label="Copiar telefone" title="Copiar telefone" ${event.phone ? '' : 'disabled'}>${icon.copy}</button></div>
     <div class="k-actions">
       <div class="k-status-actions"><button class="card-action action-confirm" type="button" data-act="confirm">Confirmar</button><button class="card-action action-decline" type="button" data-act="decline">Não confirmar</button><button class="card-action action-noshow" type="button" data-act="no-show">No-show</button></div>
       <div class="k-utility-actions">${event.meetingUrl ? `<button class="card-action action-meet" type="button" data-act="meet" aria-label="Abrir Google Meet">${icon.meet}<span>Google Meet</span></button>` : ''}<button class="card-action action-details" type="button" data-act="details">Detalhes</button></div>
     </div></article>`;
+}
+
+const flowLabels = {
+  proximas: 'Agendada',
+  andamento: 'Acontecendo',
+  concluidas: 'Compareceu',
+  no_show: 'No-show',
+  cancelada: 'Cancelada',
+  reagendar: 'Reagendar',
+  reagendado: 'Reagendada'
+};
+
+function flowChip(event) {
+  const flow = eventFlow(event);
+  const tone = flow === 'concluidas' ? 'success'
+    : ['no_show', 'cancelada'].includes(flow) ? 'danger'
+      : ['reagendar', 'reagendado'].includes(flow) ? 'warn'
+        : flow === 'andamento' ? 'accent' : 'muted';
+  return `<span class="state-chip state-chip--${tone}">${escapeHtml(flowLabels[flow] || flow)}</span>`;
+}
+
+function renderConsultationDetails(item) {
+  const modal = document.getElementById('modal');
+  if (!modal) {
+    return;
+  }
+  modal.dataset.eventId = String(item.id);
+  setText('#modal-title', item.leadName);
+  setText('#d-date', formatDate(item.eventDate));
+  setText('#d-hora', formatTime(item.startsAt));
+  setText('#d-closer', eventOwnerLabel(item));
+  setText('#d-fone', item.phone || 'Não informado');
+  const confirmation = effectiveConfirmation(item);
+  const badgeClass = confirmation === 'confirmado' ? 'badge-success'
+    : confirmation === 'nao_confirmado' ? 'badge-danger' : 'badge-warn';
+  document.getElementById('detail-chips').innerHTML =
+    `${flowChip(item)}<span class="badge ${badgeClass}">${escapeHtml(confirmationLabel(confirmation))}</span>${item.isOverbooking ? '<span class="badge badge-over">OVER</span>' : ''}`;
+  const notes = document.getElementById('detail-notes');
+  notes.hidden = !item.notes?.trim();
+  setText('#d-obs', item.notes || '');
+  document.getElementById('modal-copy').disabled = !item.phone;
+  document.getElementById('modal-meet').disabled = !item.meetingUrl;
+  const column = flowToColumn[eventFlow(item)];
+  const actionsByColumn = {
+    agendada: [['andamento', 'Iniciar'], ['compareceu', 'Compareceu'], ['cancelada', 'Cancelar']],
+    acontecendo: [['compareceu', 'Compareceu'], ['no-show', 'No-show'], ['cancelada', 'Cancelar']],
+    compareceu: [['agendada', 'Reabrir'], ['no-show', 'No-show'], ['cancelada', 'Cancelar']],
+    'no-show': [['agendada', 'Reabrir'], ['compareceu', 'Compareceu'], ['cancelada', 'Cancelar']],
+    cancelada: [['agendada', 'Reabrir'], ['compareceu', 'Compareceu']]
+  };
+  const actions = actionsByColumn[column] || actionsByColumn.agendada;
+  document.getElementById('detail-status-actions').innerHTML =
+    actions.map(([status, label]) => `<button class="detail-state-button" type="button" data-detail-status="${status}">${label}</button>`).join('');
+}
+
+function cardNode(event) {
+  const template = document.createElement('template');
+  template.innerHTML = card(event).trim();
+  return template.content.firstElementChild;
+}
+
+function cardSignature(event) {
+  return JSON.stringify([
+    event.leadName,
+    event.phone,
+    event.startsAt,
+    event.endsAt,
+    event.meetingUrl,
+    event.attendeeDeclined,
+    event.isOverbooking,
+    event.manualStatus,
+    effectiveConfirmation(event),
+    eventOwnerLabel(event)
+  ]);
+}
+
+function updateCardNode(node, event) {
+  const signature = cardSignature(event);
+  if (node.dataset.signature === signature) {
+    return node;
+  }
+  const focusedAction = node.contains(document.activeElement)
+    ? document.activeElement?.dataset.act
+    : null;
+  const next = cardNode(event);
+  node.className = next.className;
+  [...next.attributes].forEach(attribute => node.setAttribute(attribute.name, attribute.value));
+  node.innerHTML = next.innerHTML;
+  node.dataset.signature = signature;
+  if (focusedAction) {
+    requestAnimationFrame(() => node.querySelector(`[data-act="${focusedAction}"]`)?.focus());
+  }
+  return node;
 }
 
 const flowToColumn = {
@@ -238,8 +433,24 @@ const columnToStatus = {
 };
 
 function renderOrganograma() {
+  const kanban = document.getElementById('kanban');
+  kanban.querySelectorAll('.kcard:not([data-event-id])').forEach(node => node.remove());
+  const layoutState = captureLayout(kanban);
   const term = (document.getElementById('campo-busca')?.value || '').toLocaleLowerCase('pt-BR');
-  const closer = document.getElementById('f-closer')?.value || 'todos';
+  const closerSelect = document.getElementById('f-closer');
+  const closers = [...new Set(events.map(eventOwnerLabel))].sort((a, b) =>
+    a.localeCompare(b, 'pt-BR')
+  );
+  const requestedCloser = closerSelect?.value || 'todos';
+  const closer = requestedCloser === 'todos' || closers.includes(requestedCloser)
+    ? requestedCloser
+    : 'todos';
+  if (closerSelect) {
+    closerSelect.innerHTML =
+      '<option value="todos">Todos os closers</option>' +
+      closers.map(name => `<option>${escapeHtml(name)}</option>`).join('');
+    closerSelect.value = closer;
+  }
   const situation = document.getElementById('f-situacao')?.value || 'todas';
   const confirmation = document.getElementById('f-confirm')?.value || 'todas';
   const groups = {
@@ -277,27 +488,33 @@ function renderOrganograma() {
     }
     groups[column].push(event);
   });
+  const existingCards = new Map(
+    [...kanban.querySelectorAll('.kcard[data-event-id]')].map(node => [node.dataset.eventId, node])
+  );
+  const visibleIds = new Set();
   document.querySelectorAll('.col[data-col]').forEach(column => {
     const items = groups[column.dataset.col] || [];
-    column.querySelectorAll('.kcard').forEach(node => node.remove());
     const empty = column.querySelector('.col-empty');
-    items.forEach(event => empty.insertAdjacentHTML('beforebegin', card(event)));
+    if (empty) {empty.textContent = 'Nenhuma consultoria neste filtro.';}
+    items.forEach(event => {
+      const key = String(event.id);
+      visibleIds.add(key);
+      const node = updateCardNode(existingCards.get(key) || cardNode(event), event);
+      empty.before(node);
+    });
     empty.style.display = items.length ? 'none' : 'block';
     const count = column.querySelector('.col-count');
     if (count) {
       count.textContent = items.length;
     }
   });
+  existingCards.forEach((node, id) => {
+    if (!visibleIds.has(id)) {
+      node.remove();
+    }
+  });
+  animateLayout(layoutState);
   setText('#date-line', `${todayLong()} · ${events.length} consultorias`);
-  const closers = [...new Set(events.map(eventOwnerLabel))].sort((a, b) =>
-    a.localeCompare(b, 'pt-BR')
-  );
-  const select = document.getElementById('f-closer');
-  if (select && select.options.length <= 4) {
-    select.innerHTML =
-      '<option value="todos">Todos os closers</option>' +
-      closers.map(name => `<option>${escapeHtml(name)}</option>`).join('');
-  }
 }
 
 async function loadOrganograma(force = false) {
@@ -315,6 +532,43 @@ async function loadOrganograma(force = false) {
   }
 }
 
+async function loadOrganogramaStable(force = false, scrollTop = window.scrollY) {
+  await loadOrganograma(force);
+  requestAnimationFrame(() => window.scrollTo({ top: scrollTop, behavior: 'instant' }));
+}
+
+async function mutateOrganogramaEvent(item, state, feedback, control) {
+  if (organogramaMutationInFlight) {
+    return false;
+  }
+  const scrollTop = window.scrollY;
+  const cardElement = control?.closest('.kcard');
+  const originalControlLabel = control?.textContent;
+  if (control) {
+    control.disabled = true;
+    control.textContent = 'Salvando…';
+  }
+  cardElement?.setAttribute('aria-busy', 'true');
+  organogramaMutationInFlight = true;
+  try {
+    await updateEventState(item.id, state);
+    await loadOrganogramaStable(false, scrollTop);
+    toast(feedback);
+    return true;
+  } catch (error) {
+    requestAnimationFrame(() => window.scrollTo({ top: scrollTop, behavior: 'instant' }));
+    showError(error);
+    return false;
+  } finally {
+    cardElement?.removeAttribute('aria-busy');
+    if (control) {
+      control.disabled = false;
+      control.textContent = originalControlLabel;
+    }
+    organogramaMutationInFlight = false;
+  }
+}
+
 function bindOrganograma() {
   document.querySelector('.col[data-col="reagendar"]')?.remove();
   document.querySelector('#f-situacao option[value="reagendar"]')?.remove();
@@ -323,6 +577,61 @@ function bindOrganograma() {
     const node = document.getElementById(id);
     node?.addEventListener('input', renderOrganograma);
     node?.addEventListener('change', renderOrganograma);
+  });
+  const filterPanel = document.getElementById('filter-panel');
+  const filterToggle = document.getElementById('filter-toggle');
+  filterToggle?.addEventListener('click', () => {
+    const willOpen = filterPanel?.dataset.motionState === 'closed' || (filterPanel?.hidden ?? true);
+    animatePanel(filterPanel, willOpen);
+    filterToggle.setAttribute('aria-expanded', String(willOpen));
+  });
+  document.addEventListener('pointerdown', event => {
+    if (
+      filterPanel &&
+      !filterPanel.hidden &&
+      !filterPanel.contains(event.target) &&
+      !filterToggle?.contains(event.target)
+    ) {
+      animatePanel(filterPanel, false);
+      filterToggle?.setAttribute('aria-expanded', 'false');
+    }
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && filterPanel && !filterPanel.hidden) {
+      animatePanel(filterPanel, false);
+      filterToggle?.setAttribute('aria-expanded', 'false');
+      filterToggle?.focus();
+    }
+  });
+  document.querySelectorAll('[data-confirm-value]').forEach(button => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('[data-confirm-value]').forEach(item =>
+        item.setAttribute('aria-pressed', String(item === button))
+      );
+      const select = document.getElementById('f-confirm');
+      if (select) {
+        select.value = button.dataset.confirmValue;
+      }
+      renderOrganograma();
+    });
+  });
+  const updateFilterCount = () => {
+    const count = Number(document.getElementById('f-closer')?.value !== 'todos') +
+      Number(document.getElementById('f-situacao')?.value !== 'todas');
+    const badge = document.getElementById('filter-count');
+    if (badge) {
+      badge.textContent = count;
+      badge.hidden = count === 0;
+    }
+  };
+  ['f-closer', 'f-situacao'].forEach(id =>
+    document.getElementById(id)?.addEventListener('change', updateFilterCount)
+  );
+  document.getElementById('clear-filters')?.addEventListener('click', () => {
+    document.getElementById('f-closer').value = 'todos';
+    document.getElementById('f-situacao').value = 'todas';
+    updateFilterCount();
+    renderOrganograma();
   });
   document.getElementById('btn-sync')?.addEventListener('click', () => loadOrganograma(true));
   document.getElementById('kanban')?.addEventListener('click', async click => {
@@ -343,12 +652,8 @@ function bindOrganograma() {
       window.open(item.meetingUrl, '_blank', 'noopener');
     }
     if (action === 'details') {
-      setText('#modal-title', `Detalhes · ${item.leadName}`);
-      setText('#d-cliente', item.leadName);
-      setText('#d-hora', formatTime(item.startsAt));
-      setText('#d-closer', eventOwnerLabel(item));
-      setText('#d-fone', item.phone || 'Não informado');
-      document.getElementById('modal')?.classList.add('open');
+      renderConsultationDetails(item);
+      openOverlay(document.getElementById('modal'), click.target.closest('[data-act]'));
     }
     const stateByAction = {
       confirm: { confirmation: 'confirmado' },
@@ -356,18 +661,43 @@ function bindOrganograma() {
       'no-show': { manualStatus: 'no_show', confirmation: 'nao_confirmado' }
     };
     if (stateByAction[action]) {
-      try {
-        await updateEventState(item.id, stateByAction[action]);
-        await loadOrganograma();
-        toast(
-          action === 'confirm'
-            ? 'Consultoria confirmada.'
-            : action === 'decline'
-              ? 'Consultoria não confirmada.'
-              : 'Consultoria marcada como no-show.'
-        );
-      } catch (error) {
-        showError(error);
+      const actionButton = click.target.closest('[data-act]');
+      await mutateOrganogramaEvent(
+        item,
+        stateByAction[action],
+        action === 'confirm'
+          ? 'Consultoria confirmada.'
+          : action === 'decline'
+            ? 'Consultoria não confirmada.'
+            : 'Consultoria marcada como no-show.',
+        actionButton
+      );
+    }
+  });
+  document.getElementById('modal')?.addEventListener('click', async click => {
+    const modal = document.getElementById('modal');
+    const item = events.find(event => String(event.id) === modal.dataset.eventId);
+    if (!item) {
+      return;
+    }
+    if (click.target.closest('#modal-copy') && item.phone) {
+      await copyText(item.phone);
+      toast('Telefone copiado.');
+    }
+    if (click.target.closest('#modal-meet') && item.meetingUrl) {
+      window.open(item.meetingUrl, '_blank', 'noopener');
+    }
+    const statusButton = click.target.closest('[data-detail-status]');
+    if (statusButton) {
+      const status = statusButton.dataset.detailStatus;
+      const updated = await mutateOrganogramaEvent(
+        item,
+        { manualStatus: columnToStatus[status] },
+        `Consultoria atualizada: ${statusButton.textContent.toLowerCase()}.`,
+        statusButton
+      );
+      if (updated) {
+        closeOverlay(modal);
       }
     }
   });
@@ -417,25 +747,30 @@ function bindOrganograma() {
       empty.before(cardNode);
     }
     try {
+      const scrollTop = window.scrollY;
+      organogramaMutationInFlight = true;
       await updateEventState(Number(eventId), { manualStatus: columnToStatus[column.dataset.col] });
-      await loadOrganograma();
+      await loadOrganogramaStable(false, scrollTop);
       toast('Consultoria movida.');
     } catch (error) {
-      await loadOrganograma();
+      await loadOrganogramaStable();
       showError(error);
     } finally {
+      organogramaMutationInFlight = false;
       dragged = null;
     }
   });
-  document
-    .getElementById('modal-close')
-    ?.addEventListener('click', () => document.getElementById('modal')?.classList.remove('open'));
+  bindOverlay(document.getElementById('modal'), document.getElementById('modal-close'));
   window.addEventListener('hod:data-updated', event => {
     const { startDate, endDate, payload } = event.detail || {};
     if (startDate <= activeDate && activeDate <= endDate) {
-      events = payload?.events || [];
-      renderOrganograma();
-      setText('#sync-time', nowLabel());
+      if (payload?.events) {
+        events = payload.events;
+        renderOrganograma();
+        setText('#sync-time', nowLabel());
+      } else if (!organogramaMutationInFlight) {
+        loadOrganogramaStable(false);
+      }
     }
   });
   window.setInterval(() => loadOrganograma(false), 60_000);
@@ -491,11 +826,13 @@ async function renderAvailability(force = false) {
         .map(group => `<article class="availability-time-card"><div class="availability-time-head"><strong>${escapeHtml(group.key)}</strong><span>${group.closers.length} ${group.closers.length === 1 ? 'closer livre' : 'closers livres'}</span></div><div class="availability-tags">${group.closers.map(closer => `<span class="availability-tag"><i style="background:${escapeHtml(closer.color)}"></i>${escapeHtml(closer.name)}</span>`).join('')}</div></article>`)
         .join('') || '<div class="col-empty">Nenhum horário livre neste dia.</div>';
     setText('#selected-date', formatDate(activeDate));
-    setText('#date-line', todayLong());
+    setText('#date-line', `${todayLong()} · disponibilidade do Google Agenda`);
+    setText('#selected-sub', 'Janelas futuras disponíveis para encaixe');
     setText(
       '#legend-count',
       `${closers.reduce((total, closer) => total + closer.visibleSlots.length, 0)} horários livres`
     );
+    animateDataReady(grid);
     if (force) {
       setText('#sync-time', nowLabel());
       toast('Horários sincronizados com o Google Agenda.');
@@ -640,14 +977,16 @@ async function renderDaily(force = false) {
       const isRescheduled = event.summaryKind === 'rescheduled';
       const kind = isRescheduled ? 'Reagendada' : 'Qualificado';
       const registeredAt = isRescheduled ? event.rescheduledAt || event.createdAt : event.createdAt;
-      const state = event.archived ? 'Removida da agenda' : eventFlow(event);
+      const stateBadge = event.archived
+        ? '<span class="state-chip state-chip--muted">Removida da agenda</span>'
+        : flowChip(event);
       return `<tr class="${event.attendeeDeclined ? 'lead-declined' : ''}" data-search="${escapeHtml(`${event.leadName} ${event.phone || ''} ${eventOwnerLabel(event)} ${kind}`.toLowerCase())}" data-kind="${event.summaryKind}">
         <td class="created-lead"><strong>${escapeHtml(event.leadName)}</strong><small>${escapeHtml(event.phone || 'Sem telefone')}</small></td>
         <td><span class="created-kind" data-kind="${event.summaryKind === 'rescheduled' ? 'repeated' : 'new'}">${kind}</span></td>
         <td class="date-cell"><strong>${registeredAt ? formatDateInSaoPaulo(registeredAt) : '—'}</strong><span>${registeredAt ? `às ${formatTime(registeredAt)}` : 'Horário indisponível'}</span></td>
         <td class="date-cell"><strong>${formatDate(event.eventDate)}</strong><span>às ${formatTime(event.startsAt)}</span></td>
-        <td>${escapeHtml(eventOwnerLabel(event))}</td>
-        <td>${escapeHtml(state)}</td>
+        <td><span class="person-chip">${escapeHtml(eventOwnerLabel(event))}</span></td>
+        <td>${stateBadge}</td>
       </tr>`;
     };
     tbody.innerHTML =
@@ -660,6 +999,7 @@ async function renderDaily(force = false) {
       '#table-count',
       `${qualified.length} qualificados · ${rescheduled.length} reagendadas`
     );
+    animateDataReady([summaryRegion, summaryTableRegion]);
   } catch (error) {
     showError(error);
   } finally {
@@ -686,23 +1026,28 @@ function bindDaily() {
       exportCreatedEvents(dailyCreatedEvents, `hod-agendamentos-${activeDate}.csv`)
     );
   document.getElementById('btn-sync')?.addEventListener('click', () => renderDaily(true));
+  let selectedDailyKind = 'todas';
   const applyCreatedFilters = () => {
     const term = (document.getElementById('campo-busca')?.value || '').toLowerCase();
-    const kind = document.getElementById('f-situacao')?.value || 'todas';
     document.querySelectorAll('#tbody tr[data-search]').forEach(row => {
-      const kindMatches = kind === 'todas' || row.dataset.kind === kind;
+      const kindMatches = selectedDailyKind === 'todas' || row.dataset.kind === selectedDailyKind;
       row.hidden = !row.dataset.search.includes(term) || !kindMatches;
     });
     document.querySelectorAll('#tbody .table-group').forEach(group => {
       group.hidden = ![...document.querySelectorAll(`#tbody tr[data-kind="${group.dataset.group}"]`)].some(row => !row.hidden);
     });
   };
-  const situation = document.getElementById('f-situacao');
-  if (situation) {
-    situation.innerHTML =
-      '<option value="todas">Todos</option><option value="qualified">Qualificados</option><option value="rescheduled">Reagendadas</option>';
-    situation.addEventListener('change', applyCreatedFilters);
-  }
+  document.querySelector('.daily-kind-filter')?.addEventListener('click', event => {
+    const button = event.target.closest('button[data-kind]');
+    if (!button) {
+      return;
+    }
+    selectedDailyKind = button.dataset.kind;
+    document.querySelectorAll('.daily-kind-filter button').forEach(option => {
+      option.setAttribute('aria-pressed', String(option === button));
+    });
+    applyCreatedFilters();
+  });
   document.getElementById('campo-busca')?.addEventListener('input', applyCreatedFilters);
   renderDaily();
 }
@@ -737,9 +1082,15 @@ function analyticsSeries(items, start, end) {
   return [...buckets.values()].sort((a, b) => a.label.localeCompare(b.label));
 }
 
-function _renderAnalyticsCharts(items, start, end) {
+function renderAnalyticsCharts(items, start, end) {
   const normal = items.filter(item => !item.isOverbooking);
   const metric = metricSet(normal);
+  if (!normal.length) {
+    document.querySelectorAll('[data-od-id^="grafico-"]').forEach(node => {
+      node.innerHTML = `<div class="section-head"><h2>${escapeHtml(node.getAttribute('aria-label') || 'Gráfico')}</h2></div><p class="empty">Sem dados neste período.</p>`;
+    });
+    return metric;
+  }
   const series = analyticsSeries(normal, start, end);
   const maxSeries = Math.max(1, ...series.map(item => Math.max(item.attended, item.noShows)));
   const width = 560;
@@ -762,19 +1113,21 @@ function _renderAnalyticsCharts(items, start, end) {
     const max = Math.max(1, confirmed, notConfirmed);
     confirmation.innerHTML = `<div class="section-head"><h2>Confirmação</h2><span class="meta">${confirmed} confirmadas</span></div>
       <div class="bar-row"><span class="bar-label">Confirmadas</span><span class="bar-track"><span class="bar-fill" style="width:${(confirmed / max) * 100}%;background:var(--accent)"></span></span><span class="bar-num">${confirmed}</span></div>
-      <div class="bar-row"><span class="bar-label">Não confirmadas</span><span class="bar-track"><span class="bar-fill" style="width:${(notConfirmed / max) * 100}%;background:var(--muted)"></span></span><span class="bar-num">${notConfirmed}</span></div>`;
+      <div class="bar-row"><span class="bar-label">Pendentes ou não confirmadas</span><span class="bar-track"><span class="bar-fill" style="width:${(notConfirmed / max) * 100}%;background:var(--muted)"></span></span><span class="bar-num">${notConfirmed}</span></div>`;
   }
   const attended = normal.filter(item => attendanceStatus(item) === 'attended').length;
-  const noShows = normal.filter(isNoShow).length;
   const cancelled = normal.filter(item => item.manualStatus === 'cancelada').length;
   const rescheduled = normal.filter(item => ['reagendar', 'reagendado'].includes(item.manualStatus)).length;
-  const other = Math.max(0, normal.length - attended - noShows);
-  const total = Math.max(1, attended + noShows + other);
+  const noShows = normal.filter(item => isNoShow(item) && !['cancelada', 'reagendar', 'reagendado'].includes(item.manualStatus)).length;
+  const other = Math.max(0, normal.length - attended - noShows - cancelled - rescheduled);
+  const total = Math.max(1, normal.length);
   const distribution = document.querySelector('[data-od-id="grafico-distribuicao"]');
   if (distribution) {
     const attendedEnd = (attended / total) * 100;
     const noShowEnd = attendedEnd + (noShows / total) * 100;
-    distribution.innerHTML = `<div class="section-head"><h2>Distribuição por situação</h2><span class="meta">${normal.length} consultorias</span></div><div class="analytics-donut-layout"><div class="analytics-donut" role="img" aria-label="Gráfico de pizza das situações" style="background:conic-gradient(var(--success) 0 ${attendedEnd}%,var(--danger) ${attendedEnd}% ${noShowEnd}%,var(--muted) ${noShowEnd}% 100%)"></div><div class="legend"><span><i style="background:var(--success)"></i>Compareceu · ${attended}</span><span><i style="background:var(--danger)"></i>No-show · ${noShows}</span><span><i style="background:var(--muted)"></i>Outras · ${other}</span><span><i style="background:var(--warn)"></i>Reagendadas · ${rescheduled}</span><span>Canceladas · ${cancelled}</span></div></div>`;
+    const cancelledEnd = noShowEnd + (cancelled / total) * 100;
+    const rescheduledEnd = cancelledEnd + (rescheduled / total) * 100;
+    distribution.innerHTML = `<div class="section-head"><h2>Distribuição por situação</h2><span class="meta">${normal.length} consultorias</span></div><div class="analytics-donut-layout"><div class="analytics-donut" role="img" aria-label="${attended} compareceram, ${noShows} no-show, ${cancelled} canceladas, ${rescheduled} reagendadas e ${other} outras" style="background:conic-gradient(var(--success) 0 ${attendedEnd}%,var(--danger) ${attendedEnd}% ${noShowEnd}%,var(--fg) ${noShowEnd}% ${cancelledEnd}%,var(--warn) ${cancelledEnd}% ${rescheduledEnd}%,var(--muted) ${rescheduledEnd}% 100%)"></div><div class="legend"><span><i style="background:var(--success)"></i>Compareceu · ${attended}</span><span><i style="background:var(--danger)"></i>No-show · ${noShows}</span><span><i style="background:var(--fg)"></i>Canceladas · ${cancelled}</span><span><i style="background:var(--warn)"></i>Reagendadas · ${rescheduled}</span><span><i style="background:var(--muted)"></i>Outras · ${other}</span></div></div>`;
   }
   const hourly = Array.from({ length: 15 }, (_, index) => ({ hour: index + 8, count: 0 }));
   normal.forEach(item => {
@@ -818,7 +1171,19 @@ async function renderAnalytics(force = false) {
       ? await syncEvents(start, end, true, true)
       : await loadEvents(start, end, { includeFormer: true });
     events = payload.events || [];
-    const selectedCloser = document.getElementById('f-closer')?.value || 'todos';
+    const closerSelect = document.getElementById('f-closer');
+    const closerNames = [...new Set(events.map(eventOwnerLabel).filter(name => name !== 'Over'))]
+      .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    const requestedCloser = closerSelect?.value || 'todos';
+    const selectedCloser = requestedCloser === 'todos' || closerNames.includes(requestedCloser)
+      ? requestedCloser
+      : 'todos';
+    if (closerSelect) {
+      closerSelect.innerHTML =
+        '<option value="todos">Todos os closers</option>' +
+        closerNames.map(name => `<option>${escapeHtml(name)}</option>`).join('');
+      closerSelect.value = selectedCloser;
+    }
     const selectedSituation = document.getElementById('f-sit')?.value || 'todas';
     const visible = events.filter(
       item =>
@@ -868,17 +1233,17 @@ async function renderAnalytics(force = false) {
         .map(([owner, items], index) => {
           const x = metricSet(items);
           const share = m.total ? Math.round((x.total / m.total) * 100) : 0;
-          return `<tr data-closer="${escapeHtml(owner)}"><td><span class="analytics-rank">${index + 1}</span></td><td><strong>${escapeHtml(owner)}</strong></td><td class="num">${x.total}</td><td><span class="conv"><span class="conv-track"><span class="conv-fill" style="width:${share}%;background:var(--accent)"></span></span><span class="num">${share}%</span></span></td></tr>`;
+          return `<tr data-closer="${escapeHtml(owner)}"><td><span class="analytics-rank">${index + 1}</span></td><td><span class="person-chip">${escapeHtml(owner)}</span></td><td class="num">${x.total}</td><td><span class="conv"><span class="conv-track"><span class="conv-fill" style="width:${share}%;background:var(--accent)"></span></span><span class="num">${share}%</span></span></td></tr>`;
         })
         .join('') || '<tr><td colspan="4">Sem dados no período.</td></tr>';
     setText('#table-count', `${rankedGroups.length} closers · ranking por volume`);
-    const select = document.getElementById('f-closer');
-    const names = groups.map(([name]) => name).sort();
-    if (select.options.length <= 4) {
-      select.innerHTML =
-        '<option value="todos">Todos os closers</option>' +
-        names.map(name => `<option>${escapeHtml(name)}</option>`).join('');
-    }
+    renderAnalyticsCharts(visible, start, end);
+    animateDataReady([
+      document.querySelector('[data-od-id="indicadores-analytics"]'),
+      document.querySelector('[data-od-id="tabela-closers"]'),
+      ...document.querySelectorAll('[data-od-id^="grafico-"]')
+    ]);
+    animateChartBars();
   } catch (error) {
     showError(error);
   }
@@ -939,8 +1304,6 @@ function exportCreatedEvents(items, filename) {
 }
 
 function bindAnalytics() {
-  document.querySelector('[data-od-id="indicadores-analytics"]')?.remove();
-  document.querySelectorAll('[data-od-id^="grafico-"]').forEach(node => node.remove());
   document.getElementById('f-sit')?.closest('.field')?.remove();
   const rankingTitle = document.querySelector('[data-od-id="tabela-closers"] h2');
   if (rankingTitle) {
@@ -1010,12 +1373,16 @@ async function renderHome(force = false) {
     setText('#data-atual', todayLong(activeDate));
     setText('#kpi-total-val', m.total);
     setText('#kpi-conf-val', Math.round((m.total * m.confirmed) / 100));
+    setText('[data-od-id="kpi-total"] .kpi-sub', 'consultorias na data selecionada');
+    setText('[data-od-id="kpi-confirmadas"] .kpi-sub', `${m.confirmed}% de confirmação`);
     setText('#kpi-agora-val', events.filter(item => eventFlow(item) === 'andamento').length);
+    setText('[data-od-id="kpi-agora"] .kpi-sub', 'consultorias em andamento');
     setText(
       '[data-od-id="kpi-comparecimentos"] .kpi-value',
       events.filter(item => attendanceStatus(item) === 'attended').length
     );
     setText('[data-od-id="kpi-noshow"] .kpi-value', events.filter(isNoShow).length);
+    setText('[data-od-id="kpi-noshow"] .kpi-sub', 'na data selecionada');
     try {
       const availability = await loadAvailability(activeDate);
       const freeCount = (availability.closers || []).reduce(
@@ -1086,8 +1453,12 @@ async function renderHome(force = false) {
       events
         .slice(0, 12)
         .map(
-          item =>
-            `<div class="consulta${item.attendeeDeclined ? ' lead-declined' : ''}" data-status="${escapeHtml(effectiveConfirmation(item))}" data-search="${escapeHtml(`${item.leadName} ${eventOwnerLabel(item)}`.toLowerCase())}"><strong>${escapeHtml(item.leadName)}</strong><span>${formatTime(item.startsAt)} · ${escapeHtml(eventOwnerLabel(item))}</span><span class="badge">${escapeHtml(eventFlow(item))}</span></div>`
+          item => {
+            const confirmation = effectiveConfirmation(item);
+            const badgeClass = confirmation === 'confirmado' ? 'badge-success' : confirmation === 'nao_confirmado' ? 'badge-danger' : 'badge-warn';
+            const duration = item.endsAt && item.startsAt ? Math.max(0, Math.round((new Date(item.endsAt) - new Date(item.startsAt)) / 60000)) : null;
+            return `<article class="consulta upcoming-item${item.attendeeDeclined ? ' lead-declined' : ''}" data-status="${escapeHtml(confirmation)}" data-search="${escapeHtml(`${item.leadName} ${eventOwnerLabel(item)} ${item.phone || ''}`.toLowerCase())}"><div class="hora">${formatTime(item.startsAt)}${duration ? `<small>${duration} min</small>` : ''}</div><div class="consulta-main"><div class="consulta-cliente">${escapeHtml(item.leadName)}</div><div class="consulta-sub">${escapeHtml(eventOwnerLabel(item))}${item.phone ? ` · ${escapeHtml(item.phone)}` : ''}</div></div><div class="consulta-side"><span class="badge ${badgeClass}">${escapeHtml(confirmationLabel(confirmation))}</span><a class="upcoming-open" href="organograma.html" aria-label="Abrir ${escapeHtml(item.leadName)} no organograma" title="Abrir no organograma"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></a></div></article>`;
+          }
         )
         .join('') || '<p class="empty">Nenhuma consultoria hoje.</p>';
     const pending = events.filter(
@@ -1097,8 +1468,13 @@ async function renderHome(force = false) {
     );
     const pendingSection = document.querySelector('[data-od-id="pendencias"]');
     if (pendingSection) {
-      pendingSection.innerHTML = `<div class="section-head"><h2>Pendências</h2><span class="meta num">${pending.length} itens</span></div>${pending.map(item => `<div class="pend-item${item.attendeeDeclined ? ' lead-declined' : ''}"><div class="pend-info"><div class="pend-name">${escapeHtml(item.leadName)}</div><div class="pend-detail">${formatTime(item.startsAt)} · ${escapeHtml(eventOwnerLabel(item))} · ${escapeHtml(eventFlow(item))}</div></div><a class="mini-btn" href="organograma.html">Abrir</a></div>`).join('') || '<p class="empty">Nenhuma pendência hoje.</p>'}`;
+      pendingSection.innerHTML = `<div class="section-head"><h2>Pendências</h2><span class="meta num">${pending.length} itens</span></div>${pending.map(item => `<div class="pend-item${item.attendeeDeclined ? ' lead-declined' : ''}"><div class="pend-info"><div class="pend-name">${escapeHtml(item.leadName)}</div><div class="pending-meta"><span class="time-chip">${formatTime(item.startsAt)}</span><span class="person-chip">${escapeHtml(eventOwnerLabel(item))}</span>${flowChip(item)}</div></div><a class="mini-btn" href="organograma.html" aria-label="Abrir ${escapeHtml(item.leadName)} no organograma">Abrir</a></div>`).join('') || '<p class="empty">Nenhuma pendência hoje.</p>'}`;
     }
+    animateDataReady([
+      document.querySelector('[data-od-id="indicadores-hoje"]'),
+      document.getElementById('lista-consultas'),
+      pendingSection
+    ]);
     setText('#sync-time', nowLabel());
   } catch (error) {
     showError(error);
@@ -1112,24 +1488,56 @@ async function renderHome(force = false) {
 function bindHome() {
   bindOperationalDateControls('home-date', () => renderHome());
   document.getElementById('btn-sync')?.addEventListener('click', () => renderHome(true));
-  document.getElementById('campo-busca')?.addEventListener('input', event => {
-    const term = event.target.value.toLowerCase();
+  let activeHomeFilter = 'todas';
+  const applyHomeFilters = () => {
+    const term = (document.getElementById('campo-busca')?.value || '').toLocaleLowerCase('pt-BR');
+    let visible = 0;
     document.querySelectorAll('#lista-consultas [data-search]').forEach(row => {
-      row.hidden = !row.dataset.search.includes(term);
+      const matches = (!term || row.dataset.search.includes(term)) &&
+        (activeHomeFilter === 'todas' || row.dataset.status === activeHomeFilter);
+      row.hidden = !matches;
+      if (matches) {
+        visible += 1;
+      }
     });
-  });
+    const empty = document.getElementById('lista-vazia');
+    if (empty) {
+      empty.style.display = visible ? 'none' : 'block';
+    }
+  };
+  document.getElementById('campo-busca')?.addEventListener('input', applyHomeFilters);
   document.querySelectorAll('[data-filter]').forEach(button =>
     button.addEventListener('click', () => {
-      const value = button.dataset.filter;
-      document.querySelectorAll('#lista-consultas [data-status]').forEach(row => {
-        row.hidden = value !== 'todas' && row.dataset.status !== value;
-      });
+      activeHomeFilter = button.dataset.filter;
+      document.querySelectorAll('[data-filter]').forEach(item =>
+        item.setAttribute('aria-pressed', String(item === button))
+      );
+      applyHomeFilters();
     })
   );
   renderHome();
 }
 
 function bindSettings() {
+  async function refreshCalendarStatus() {
+    const badge = document.getElementById('badge-agenda');
+    const info = document.querySelector('.conn .row-sub');
+    try {
+      const [status, calendarData] = await Promise.all([getCalendarStatus(), getCalendars()]);
+      const count = calendarData.calendars?.length || 0;
+      const connected = status.authorized && status.reachable;
+      if (badge) {
+        badge.className = `badge ${connected ? 'badge-success' : 'badge-warn'}`;
+        badge.textContent = connected ? 'Conectado' : status.needsReconnect ? 'Reconectar' : 'Indisponível';
+      }
+      if (info) {info.textContent = `${count} ${count === 1 ? 'agenda' : 'agendas'} · ${connected ? 'sincronização ativa' : (status.message || 'verifique a conexão')}`;}
+      if (status.lastSync) {setText('#last-sync', new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(status.lastSync)));}
+    } catch (error) {
+      if (badge) { badge.className = 'badge badge-warn'; badge.textContent = 'Indisponível'; }
+      if (info) {info.textContent = error.message;}
+    }
+  }
+  refreshCalendarStatus();
   document.querySelectorAll('[data-theme-btn]').forEach(button => {
     button.addEventListener('click', () => {
       const value = button.dataset.themeBtn;
@@ -1158,6 +1566,7 @@ function bindSettings() {
       setText('#last-sync', nowLabel());
       setText('#sync-time', nowLabel());
       toast('Google Agenda sincronizada.');
+      refreshCalendarStatus();
     } catch (error) {
       showError(error);
     } finally {
@@ -1166,7 +1575,84 @@ function bindSettings() {
   });
 }
 
+function clearDemonstrationContent() {
+  document.querySelectorAll('.nav-count, .nav-badge').forEach(node => node.remove());
+  document.querySelectorAll('.demo-note').forEach(node => node.remove());
+  document.querySelectorAll('.sync-card').forEach(node => node.remove());
+  if (page === 'hod-organograma') {
+    document.querySelectorAll('#kanban .kcard').forEach(node => node.remove());
+    const select = document.getElementById('f-closer');
+    if (select) {
+      select.innerHTML = '<option value="todos">Todos os closers</option>';
+    }
+    document.querySelectorAll('#kanban .col-count').forEach(node => { node.textContent = '—'; });
+    document.querySelectorAll('#kanban .col-empty').forEach(node => {
+      node.textContent = 'Carregando consultorias…';
+      node.style.display = 'block';
+    });
+    setText('#date-line', 'Carregando consultorias do Google Agenda…');
+  }
+  if (page === 'hod-home') {
+    document.querySelectorAll('[data-od-id^="kpi-"] .kpi-value').forEach(node => {
+      const value = node.querySelector('[id]');
+      (value || node).textContent = '—';
+    });
+    document.querySelectorAll('[data-od-id^="kpi-"] .kpi-sub').forEach(node => { node.textContent = ''; });
+    document.querySelector('[data-od-id="proxima-consultoria"]')?.setAttribute('hidden', '');
+    const list = document.getElementById('lista-consultas');
+    if (list) {list.innerHTML = '<p class="empty">Carregando consultorias do Google Agenda…</p>';}
+    const pending = document.querySelector('[data-od-id="pendencias"]');
+    if (pending) {pending.innerHTML = '<div class="section-head"><h2>Pendências</h2></div><p class="empty">Carregando pendências…</p>';}
+    setText('[data-od-id="acesso-horarios"] .quick-desc', 'Carregando horários…');
+  }
+  if (page === 'hod-availability') {
+    document.querySelector('[data-od-id="resumo-closers"]')?.remove();
+    const grid = document.getElementById('daily-grid');
+    if (grid) {grid.innerHTML = '<p class="empty">Carregando disponibilidade do Google Agenda…</p>';}
+    const week = document.getElementById('week-grid');
+    if (week) {week.innerHTML = '';}
+    const select = document.getElementById('f-closer');
+    if (select) {select.innerHTML = '<option value="todos">Todos os closers</option>';}
+    setText('#date-line', 'Carregando disponibilidade do Google Agenda…');
+    setText('#selected-date', formatDate(activeDate));
+    setText('#selected-sub', 'Janelas futuras disponíveis para encaixe');
+    setText('#legend-count', 'Carregando horários…');
+  }
+  if (page === 'hod-daily-summary' || page === 'hod-analytics') {
+    document.querySelectorAll('.kpi-value').forEach(node => { node.textContent = '—'; });
+    const body = document.getElementById('tbody');
+    if (body) {body.innerHTML = '<tr><td colspan="8">Carregando dados do Google Agenda…</td></tr>';}
+    setText('#table-count', 'Carregando registros…');
+    document.querySelectorAll('[data-od-id="linha-do-dia"], [data-od-id="destaque-agora"], [data-od-id="proximas-acoes"]').forEach(node => node.remove());
+    if (page === 'hod-analytics') {
+      document.querySelectorAll('[data-od-id^="grafico-"]').forEach(node => {
+        node.innerHTML = `<div class="section-head"><h2>${escapeHtml(node.getAttribute('aria-label') || 'Gráfico')}</h2></div><p class="empty">Carregando dados do Google Agenda…</p>`;
+      });
+    }
+    const select = document.getElementById('f-closer');
+    if (select) {select.innerHTML = '<option value="todos">Todos os closers</option>';}
+    setText('#date-line', 'Carregando dados do Google Agenda…');
+  }
+  if (page === 'hod-settings') {
+    const badge = document.getElementById('badge-agenda');
+    if (badge) { badge.className = 'badge badge-muted'; badge.textContent = 'Verificando conexão…'; }
+    const agendaInfo = document.querySelector('.conn .row-sub');
+    if (agendaInfo) {agendaInfo.textContent = 'Verificando Google Agenda…';}
+    setText('#last-sync', '—');
+  }
+  document.documentElement.removeAttribute('data-hod-boot');
+}
+
 async function start() {
+  clearDemonstrationContent();
+  decorateSyncButton();
+  bindSharedMotion();
+  document.querySelectorAll('.brand-sub').forEach(node => node.remove());
+  document.querySelectorAll('.nav-link').forEach(link => {
+    const label = link.textContent.replace(/\d+$/u, '').trim();
+    link.title = label;
+    link.setAttribute('aria-label', label);
+  });
   try {
     await common();
   } catch (error) {

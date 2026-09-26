@@ -1,5 +1,13 @@
 # Changelog
 
+## Estado atual — 2026-09-26
+
+- Interface operacional refinada nas seis páginas principais, com navegação por ícones, controles segmentados, filtros e ações mais consistentes.
+- Início exibe indicadores da data selecionada, próxima consultoria, próximas do dia, pendências e acessos rápidos, sempre com dados da API após o carregamento.
+- Organograma preserva busca, filtros e posição de rolagem durante atualizações; cards mostram confirmação, closer, telefone e ações operacionais.
+- Movimento próprio e nativo: View Transitions na navegação, Web Animations API para feedback, painéis e continuidade dos cards; sem GSAP. A interface respeita `prefers-reduced-motion`.
+- O frontend foi validado com lint, build e smoke das sete páginas. A API e suas regras não foram alteradas nesta atualização.
+
 ## Estado atual — 2026-09-23
 
 - Resumo Diário corrigido: “Qualificados no dia” usa somente criações no Google

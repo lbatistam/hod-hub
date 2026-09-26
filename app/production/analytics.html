@@ -182,10 +182,9 @@ table.ds{width:100%;border-collapse:collapse;font-size:14px;min-width:900px}
 <div class="sync-card" data-od-id="status-agenda"><span class="sync-dot" aria-hidden="true"></span><div><p><strong>Google Agenda sincronizada</strong></p><p class="meta">Atualizado às <span id="sync-time">09:42</span> · 2 agendas</p></div></div>
 <button class="theme-toggle" data-od-id="alternar-tema" type="button" aria-pressed="false" aria-label="Alternar entre modo claro e escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 13.5A8 8 0 0 1 10.5 4 8 8 0 1 0 20 13.5Z"/></svg><span>Modo escuro</span></button>
 <script>(function(){var b=document.currentScript.previousElementSibling;function paint(){var d=document.documentElement.dataset.theme==='dark';b.setAttribute('aria-pressed',d?'true':'false');b.querySelector('span').textContent=d?'Modo claro':'Modo escuro'}b.addEventListener('click',function(){var d=document.documentElement.dataset.theme!=='dark';if(d){document.documentElement.dataset.theme='dark'}else{document.documentElement.removeAttribute('data-theme')}try{localStorage.setItem('hod-theme',d?'dark':'light')}catch(e){}paint();var t=document.getElementById('toast');if(t){t.textContent=d?'Modo escuro ativado.':'Modo claro ativado.';t.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(function(){t.classList.remove('show')},2200)}});paint()})();</script>
-<div class="admin" data-od-id="perfil-admin"><div class="avatar" aria-hidden="true">DM</div><div style="min-width:0"><div class="admin-name">Diego Martins</div><div class="admin-role">Administrador · Operação</div></div></div>
+<div class="admin" data-od-id="perfil-admin"><div class="avatar" aria-hidden="true">LB</div><div style="min-width:0"><div class="admin-name">Leandro Batista</div><div class="admin-role">Administrador · Operação</div></div></div>
 </aside>
 <main class="main" id="conteudo">
-<span class="demo-note" data-od-id="aviso-demo"></span>
 <header class="topbar" data-od-id="cabecalho-analytics">
 <div><p class="eyebrow">HOD Hub · Desempenho</p><h1 class="greeting">Analytics</h1><p class="date-line" id="date-line">16 a 22 de setembro de 2026 · <span class="num">96</span> consultorias no período</p></div>
 <div style="display:flex;gap:12px;flex-wrap:wrap"><button class="btn btn-secondary" data-od-id="btn-sincronizar" id="btn-sync" type="button">Sincronizar agora</button><button class="btn btn-secondary" data-od-id="btn-exportar" id="btn-export" type="button">Exportar CSV</button><button class="btn btn-primary" data-od-id="btn-relatorio" id="btn-report" type="button">Gerar relatório</button></div>
@@ -259,7 +258,7 @@ table.ds{width:100%;border-collapse:collapse;font-size:14px;min-width:900px}
 <tr data-closer="Thiago Abreu" data-od-id="linha-thiago"><td><strong>Thiago Abreu</strong></td><td class="num">28</td><td class="num">21</td><td class="num">19</td><td class="num">3</td><td class="num">3</td><td class="num">3</td><td><span class="conv"><span class="conv-track"><span class="conv-fill" style="width:68%;background:var(--success)"></span></span><span class="num">68%</span></span></td></tr>
 </tbody></table></div>
 </section>
-<footer class="pagefoot" data-od-id="rodape"><span><a href="inicio.html">← Voltar ao Início</a> · © HOD Hub · Operação interna</span><span class="meta">Fonte: Google Agenda · Analytics</span></footer>
+<footer class="pagefoot" data-od-id="rodape"><span><a href="inicio.html">← Voltar ao Início</a> · © HOD Hub · Operação interna</span><span class="meta">Fonte: Google Agenda · dados da HOD Platform</span></footer>
 </main>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

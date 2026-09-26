@@ -142,7 +142,7 @@ Este repositório não inclui banco operacional, tokens OAuth, cookies, logs, ba
 
 ## Estado atual
 
-O frontend oficial usa a direção visual Neutral Modern, possui temas claro e escuro, seleção de data consistente e layout responsivo. A API central oferece autenticação Google, calendário, disponibilidade, estados, equipe, configurações, resumo diário, Analytics, histórico e SSE.
+O frontend oficial usa a direção visual Neutral Modern, possui temas claro e escuro, seleção de data consistente, controles segmentados e layout responsivo. A navegação e os controles usam animações nativas suaves, sem GSAP, com suporte a movimento reduzido. O Início reúne indicadores, próxima consultoria, próximas do dia, pendências e atalhos. A API central oferece autenticação Google, calendário, disponibilidade, estados, equipe, configurações, resumo diário, Analytics, histórico e SSE.
 
 ## Licença
 

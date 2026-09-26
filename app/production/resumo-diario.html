@@ -194,10 +194,9 @@ table.ds{width:100%;border-collapse:collapse;font-size:14px;min-width:760px}
 <div class="sync-card" data-od-id="status-agenda"><span class="sync-dot" aria-hidden="true"></span><div><p><strong>Google Agenda sincronizada</strong></p><p class="meta">Atualizado às <span id="sync-time">09:42</span> · 2 agendas</p></div></div>
 <button class="theme-toggle" data-od-id="alternar-tema" type="button" aria-pressed="false" aria-label="Alternar entre modo claro e escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 13.5A8 8 0 0 1 10.5 4 8 8 0 1 0 20 13.5Z"/></svg><span>Modo escuro</span></button>
 <script>(function(){var b=document.currentScript.previousElementSibling;function paint(){var d=document.documentElement.dataset.theme==='dark';b.setAttribute('aria-pressed',d?'true':'false');b.querySelector('span').textContent=d?'Modo claro':'Modo escuro'}b.addEventListener('click',function(){var d=document.documentElement.dataset.theme!=='dark';if(d){document.documentElement.dataset.theme='dark'}else{document.documentElement.removeAttribute('data-theme')}try{localStorage.setItem('hod-theme',d?'dark':'light')}catch(e){}paint();var t=document.getElementById('toast');if(t){t.textContent=d?'Modo escuro ativado.':'Modo claro ativado.';t.classList.add('show');clearTimeout(window.__tt);window.__tt=setTimeout(function(){t.classList.remove('show')},2200)}});paint()})();</script>
-<div class="admin" data-od-id="perfil-admin"><div class="avatar" aria-hidden="true">DM</div><div style="min-width:0"><div class="admin-name">Diego Martins</div><div class="admin-role">Administrador · Operação</div></div></div>
+<div class="admin" data-od-id="perfil-admin"><div class="avatar" aria-hidden="true">LB</div><div style="min-width:0"><div class="admin-name">Leandro Batista</div><div class="admin-role">Administrador · Operação</div></div></div>
 </aside>
 <main class="main" id="conteudo">
-<span class="demo-note" data-od-id="aviso-demo">Demonstração · fechamento parcial às 14:05 · valores de exemplo</span>
 <header class="topbar" data-od-id="cabecalho-resumo">
 <div><p class="eyebrow">HOD Hub · Fechamento do dia</p><h1 class="greeting">Resumo Diário</h1><p class="date-line" id="date-line">terça-feira, 22 de setembro de 2026 · <span class="num">18</span> consultorias · 3 closers</p></div>
 <div class="daily-header-actions"><button class="btn btn-secondary" id="btn-sync" type="button">Sincronizar agora</button><button class="btn btn-secondary" data-od-id="btn-exportar" id="btn-export" type="button">Exportar resumo</button></div>
@@ -221,7 +220,7 @@ table.ds{width:100%;border-collapse:collapse;font-size:14px;min-width:760px}
 </section>
 <section class="card" data-od-id="tabela-recentes" aria-label="Consultorias recentes">
 <div class="section-head"><h2>Consultorias recentes</h2><span class="meta num" id="table-count">8 registros</span></div>
-<div class="toolbar"><label class="search"><input id="campo-busca" type="search" placeholder="Buscar cliente, closer…" aria-label="Buscar na tabela" /></label><select class="select" id="f-situacao" aria-label="Filtrar por situação"><option value="todas">Todas as situações</option><option value="Compareceu">Compareceu</option><option value="No-show">No-show</option><option value="Cancelada">Cancelada</option><option value="Agendada">Agendada</option><option value="Em sessão">Em sessão</option></select></div>
+<div class="toolbar"><label class="search"><input id="campo-busca" type="search" placeholder="Buscar cliente, closer…" aria-label="Buscar na tabela" /></label><div class="segmented-control daily-kind-filter" role="group" aria-label="Filtrar registros"><button type="button" data-kind="todas" aria-pressed="true">Todos</button><button type="button" data-kind="qualified" aria-pressed="false">Qualificados</button><button type="button" data-kind="rescheduled" aria-pressed="false">Reagendadas</button></div></div>
 <div class="table-wrap"><table class="ds"><thead><tr><th>Cliente</th><th>Horário</th><th>Closer</th><th>Confirmação</th><th>Situação</th></tr></thead><tbody id="tbody">
 <tr data-search="patrícia gomes rafael lima" data-sit="Em sessão"><td><strong>Patrícia Gomes</strong></td><td class="num">13:50 · 30 min</td><td>Rafael Lima</td><td><span class="badge badge-success"><span class="badge-dot"></span>Confirmada</span></td><td><span class="badge badge-accent"><span class="badge-dot"></span>Em sessão</span></td></tr>
 <tr data-search="juliana castro camila sousa" data-sit="No-show"><td><strong>Juliana Castro</strong></td><td class="num">13:00 · 30 min</td><td>Camila Sousa</td><td><span class="badge badge-warn"><span class="badge-dot"></span>Aguardando</span></td><td><span class="badge badge-danger"><span class="badge-dot"></span>No-show</span></td></tr>
@@ -252,7 +251,7 @@ table.ds{width:100%;border-collapse:collapse;font-size:14px;min-width:760px}
 </section>
 </div>
 </div>
-<footer class="pagefoot" data-od-id="rodape"><span><a href="inicio.html">← Voltar ao Início</a> · © HOD Hub · Operação interna</span><span class="meta">Fonte: Google Agenda · protótipo navegável · Resumo v1</span></footer>
+<footer class="pagefoot" data-od-id="rodape"><span><a href="inicio.html">← Voltar ao Início</a> · © HOD Hub · Operação interna</span><span class="meta">Fonte: Google Agenda · dados da HOD Platform</span></footer>
 </main>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
