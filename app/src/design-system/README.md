@@ -16,10 +16,11 @@ Implementação canônica: `src/neutral-global.css` e `src/neutral-main.js`. O a
 
 `src/app/hod-motion.js` concentra o movimento nativo com Web Animations API:
 
-- 150–420 ms, curva `cubic-bezier(0.16, 1, 0.3, 1)`;
-- troca de páginas nativa via View Transitions: barra lateral estável, conteúdo com deslocamento lateral curto e saída mais rápida que a entrada;
-- FLIP nativo somente para continuidade espacial de listas/Kanban;
-- toast, painel e feedback de pressão compartilhado por botões e links, inclusive via teclado, sem coreografia decorativa;
+- feedback de pressão em 150 ms somente para ponteiro; ações pelo teclado respondem sem animação;
+- troca de páginas nativa via View Transitions em 240 ms, com saída em 120 ms e barra lateral estável;
+- FLIP nativo em 240 ms somente para continuidade espacial de cards existentes no Kanban; cards revelados por filtros não entram em cascata;
+- gráficos animados apenas na primeira exibição; atualizações de dados não repetem a entrada;
+- toast e painel com transições curtas e interruptíveis, sem coreografia decorativa;
 - cancelamento de animações concorrentes;
 - `prefers-reduced-motion` respeitado;
 - nenhuma função operacional depende da animação para funcionar.

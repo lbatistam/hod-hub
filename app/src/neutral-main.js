@@ -40,6 +40,7 @@ let events = [];
 let dailyCreatedEvents = [];
 let activeDate = selectedDate();
 let organogramaMutationInFlight = false;
+let analyticsChartEntranceShown = false;
 
 function toast(message) {
   const node = document.getElementById('toast');
@@ -214,11 +215,6 @@ function bindSharedMotion() {
     animateButtonFeedback(control);
   };
   document.addEventListener('pointerdown', acknowledge);
-  document.addEventListener('keydown', event => {
-    if (!event.repeat && (event.key === 'Enter' || event.key === ' ')) {
-      acknowledge(event);
-    }
-  });
 }
 
 function showError(error) {
@@ -1243,7 +1239,9 @@ async function renderAnalytics(force = false) {
       document.querySelector('[data-od-id="tabela-closers"]'),
       ...document.querySelectorAll('[data-od-id^="grafico-"]')
     ]);
-    animateChartBars();
+    if (!analyticsChartEntranceShown) {
+      analyticsChartEntranceShown = animateChartBars() > 0;
+    }
   } catch (error) {
     showError(error);
   }

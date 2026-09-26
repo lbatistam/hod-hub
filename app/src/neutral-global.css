@@ -30,27 +30,27 @@
 }
 
 ::view-transition-old(root) {
-  animation: 210ms ease-in both hod-page-out;
+  animation: 120ms var(--ease-standard) both hod-page-out;
 }
 
 ::view-transition-new(root) {
-  animation: 420ms var(--ease-standard) both hod-page-in;
+  animation: 240ms var(--ease-standard) both hod-page-in;
 }
 
 ::view-transition-old(hod-sidebar),
 ::view-transition-new(hod-sidebar) {
-  animation-duration: 320ms;
+  animation: none;
 }
 
 @supports not (view-transition-name: hod-sidebar) {
   body[data-page^='hod-'] .main {
-    animation: 420ms var(--ease-standard) both hod-page-in;
+    animation: 240ms var(--ease-standard) both hod-page-in;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(root) {
-    animation: 90ms ease-in both hod-page-fade-out !important;
+    animation: 90ms var(--ease-standard) both hod-page-fade-out !important;
   }
   ::view-transition-new(root) {
     animation: 130ms ease-out both hod-page-fade-in !important;
@@ -940,8 +940,11 @@ body.has-overlay { overflow: hidden; }
 .modal-back .modal {
   opacity: 0;
   transform: translateY(8px) scale(.99);
-  transition: opacity 260ms var(--ease-standard), transform 320ms var(--ease-standard);
+  transition: opacity 250ms var(--ease-standard), transform 250ms var(--ease-standard);
 }
+
+/* A indicação de reunião ao vivo é estática: não compete com os dados da tela. */
+.pulse::after { display: none; }
 
 .consult-detail {
   box-sizing: border-box;
@@ -1200,6 +1203,8 @@ body[data-page='hod-home'] .upcoming-open svg { width: 17px; height: 17px; }
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
   }
+  .toast, .toast.show { transform: translateX(-50%) !important; }
+  .modal-back .modal { transform: none !important; }
 }
 
 body[data-page='hod-organograma'] .kclient {

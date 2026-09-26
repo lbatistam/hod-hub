@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const HOD_RELEASE = 'r41';
+const HOD_RELEASE = 'r42';
 
 // Auto-detect every entry HTML in production/ and register it as a Rollup
 // input. Uma página nova entra no build ao ser adicionada a production/.

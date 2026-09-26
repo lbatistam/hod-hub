@@ -5,7 +5,7 @@
 
 // Bump the suffix on every release to bust users' caches when CSS/JS hashes
 // change but the same URL is requested. Activate handler clears old caches.
-const CACHE = 'hod-hub-r38';
+const CACHE = 'hod-hub-r42';
 
 // Subpath-aware: scope is the directory the SW is registered against. Under
 // `/` it's `https://example.com/`; under a project subpath it's that

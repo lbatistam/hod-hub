@@ -6,6 +6,7 @@
 - Início exibe indicadores da data selecionada, próxima consultoria, próximas do dia, pendências e acessos rápidos, sempre com dados da API após o carregamento.
 - Organograma preserva busca, filtros e posição de rolagem durante atualizações; cards mostram confirmação, closer, telefone e ações operacionais.
 - Movimento próprio e nativo: View Transitions na navegação, Web Animations API para feedback, painéis e continuidade dos cards; sem GSAP. A interface respeita `prefers-reduced-motion`.
+- Movimento refinado com os critérios de Emil Kowalski: navegação em 240 ms (saída em 120 ms), resposta ao clique em 150 ms sem animar o teclado, FLIP do Kanban em 240 ms, gráficos animados só na primeira exibição e pulso decorativo removido. Adicionados cinco testes do motor de animação; lint, build e smoke das sete páginas aprovados.
 - O frontend foi validado com lint, build e smoke das sete páginas. O código da API foi alinhado ao backend local já funcional: Luccas ativo, Misael histórico e origens de desenvolvimento locais. Typecheck, build e 33 testes da API passaram; banco, credenciais e serviço em execução não foram alterados.
 
 ## Estado atual — 2026-09-23

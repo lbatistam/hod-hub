@@ -1,6 +1,8 @@
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const easeOut = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const easeInOut = 'cubic-bezier(0.77, 0, 0.175, 1)';
 const activeAnimations = new WeakMap();
+const revealedRegions = new WeakSet();
 
 export function motionReduced() {
   return reducedMotion.matches;
@@ -38,20 +40,12 @@ export function animateLayout(state) {
   if (!state || motionReduced()) {
     return;
   }
-  let entering = 0;
   state.root.querySelectorAll('[data-flip-id]').forEach(node => {
     const before = state.positions.get(node.dataset.flipId);
     activeAnimations.get(node)?.cancel();
     const after = node.getBoundingClientRect();
     if (!before) {
-      play(
-        node,
-        [
-          { opacity: 0, transform: 'translateY(6px)' },
-          { opacity: 1, transform: 'translateY(0)' }
-        ],
-        { duration: 260, delay: Math.min(entering++ * 12, 84), easing: easeOut }
-      );
+      // Filters can reveal many cards at once; don't make daily work wait for a cascade.
       return;
     }
     // DOMRects include the app's interface zoom; CSS transforms use unzoomed units.
@@ -62,8 +56,8 @@ export function animateLayout(state) {
       return;
     }
     play(node, [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'translate(0, 0)' }], {
-      duration: 360,
-      easing: easeOut
+      duration: 240,
+      easing: easeInOut
     });
   });
 }
@@ -118,24 +112,28 @@ export function animatePanel(node, visible) {
 
 export function animateButtonFeedback(node) {
   play(node, [{ transform: 'scale(0.975)' }, { transform: 'scale(1)' }], {
-    duration: 190,
+    duration: 150,
     easing: easeOut
   });
 }
 
 export function animateDataReady(targets) {
   const nodes = (Array.isArray(targets) ? targets : [targets]).filter(Boolean);
-  nodes.forEach((node, index) => {
+  nodes.forEach(node => {
+    if (revealedRegions.has(node)) {
+      return;
+    }
+    revealedRegions.add(node);
     play(node, [{ opacity: 0.82 }, { opacity: 1 }], {
-      duration: 300,
-      delay: Math.min(index * 24, 96),
+      duration: 200,
       easing: easeOut
     });
   });
 }
 
 export function animateChartBars(root = document) {
-  root.querySelectorAll('.vbar, .bar-fill').forEach((node, index) => {
+  const bars = root.querySelectorAll('.vbar, .bar-fill');
+  bars.forEach((node, index) => {
     const vertical = node.classList.contains('vbar');
     play(
       node,
@@ -146,7 +144,8 @@ export function animateChartBars(root = document) {
         },
         { transform: 'scale(1)', transformOrigin: vertical ? 'bottom' : 'left' }
       ],
-      { duration: 420, delay: Math.min(index * 14, 98), easing: easeOut }
+      { duration: 250, delay: Math.min(index * 30, 90), easing: easeOut }
     );
   });
+  return bars.length;
 }
