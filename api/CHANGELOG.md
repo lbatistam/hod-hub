@@ -1,5 +1,11 @@
 # Changelog
 
+## 25/09/2026 · equipe operacional
+
+- Luccas (`luccas@metodohod.com`) passa a integrar a equipe ativa como closer fixo.
+- Misael deixa a equipe ativa e permanece identificado como ex-integrante para preservar relatórios e reuniões históricas.
+- Regressão de equipe atualizada; testes, typecheck e build aprovados.
+
 ## 23/09/2026 · captura de criações para reuniões futuras
 
 - A sincronização passou a consultar as alterações do Google Agenda desde o início do dia solicitado e registra as criações qualificadas mesmo quando a reunião está marcada para uma data futura.

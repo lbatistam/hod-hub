@@ -64,13 +64,17 @@ describe('disponibilidade (V1 availability-rules)', () => {
 });
 
 describe('equipe (V1 closers)', () => {
-  it('Rafael é over desde 2026-07-15; Álvaro é sdr; 3 former', () => {
+  it('Rafael é over; Álvaro é sdr; Misael é histórico; Luccas está ativo', () => {
     const rafa = closerForCalendar({ id: 'rafael@metodohod.com', summary: 'Rafael' });
     assert.equal(rafa.isOverbooking, true);
     assert.equal(rafa.overbookingFrom, '2026-07-15');
     const alvaro = closerForCalendar({ id: 'alvaro@metodohod.com', summary: 'Álvaro' });
     assert.equal(alvaro.teamStatus, 'sdr');
-    assert.equal(formerClosers.length, 3);
+    const misael = closerForCalendar({ id: 'misael@metodohod.com', summary: 'Misael' });
+    assert.equal(misael.teamStatus, 'former');
+    const luccas = closerForCalendar({ id: 'luccas@metodohod.com', summary: 'Luccas' });
+    assert.equal(luccas.teamStatus, 'active');
+    assert.equal(formerClosers.length, 4);
     assert.ok(!configuredCloserEmails.includes('reuniao@metodohod.com'));
   });
 });

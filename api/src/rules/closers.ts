@@ -14,7 +14,8 @@ export interface CloserConfig {
 const closerConfigs: CloserConfig[] = [
   { match: 'leandro@metodohod.com', name: 'Leandro Galvão', color: '#7c3aed', role: 'fixed' },
   { match: 'rafael@metodohod.com', name: 'Rafael', color: '#f59e0b', role: 'overbooking', overbookingFrom: '2026-07-15' },
-  { match: 'misael@metodohod.com', name: 'Misael', color: '#22c55e', role: 'fixed' },
+  { match: 'misael@metodohod.com', name: 'Misael', color: '#22c55e', role: 'fixed', teamStatus: 'former' },
+  { match: 'luccas@metodohod.com', name: 'Luccas', color: '#2563eb', role: 'fixed', teamStatus: 'active' },
   { match: 'larissa@metodohod.com', name: 'Larissa', color: '#0000ff', role: 'fixed' },
   { match: 'eduardo@metodohod.com', name: 'Eduardo', color: '#eab308', role: 'fixed' },
   { match: 'tulio@metodohod.com', name: 'Túlio', color: '#ec4899', role: 'fixed' },

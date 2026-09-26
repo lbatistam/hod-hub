@@ -17,7 +17,7 @@ export const config = {
   origin: process.env.APP_ORIGIN || 'http://localhost:8877',
   corsOrigins: csv(
     process.env.CORS_ORIGINS ||
-      'http://localhost:8787,http://127.0.0.1:8787'
+      'http://localhost:8787,http://127.0.0.1:8787,http://localhost:9173,http://127.0.0.1:9173,http://localhost:9174,http://127.0.0.1:9174'
   ),
   googleClientId: process.env.GOOGLE_CLIENT_ID || '',
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
