@@ -6,7 +6,7 @@
 - Início exibe indicadores da data selecionada, próxima consultoria, próximas do dia, pendências e acessos rápidos, sempre com dados da API após o carregamento.
 - Organograma preserva busca, filtros e posição de rolagem durante atualizações; cards mostram confirmação, closer, telefone e ações operacionais.
 - Movimento próprio e nativo: View Transitions na navegação, Web Animations API para feedback, painéis e continuidade dos cards; sem GSAP. A interface respeita `prefers-reduced-motion`.
-- O frontend foi validado com lint, build e smoke das sete páginas. A API e suas regras não foram alteradas nesta atualização.
+- O frontend foi validado com lint, build e smoke das sete páginas. O código da API foi alinhado ao backend local já funcional: Luccas ativo, Misael histórico e origens de desenvolvimento locais. Typecheck, build e 33 testes da API passaram; banco, credenciais e serviço em execução não foram alterados.
 
 ## Estado atual — 2026-09-23
 
