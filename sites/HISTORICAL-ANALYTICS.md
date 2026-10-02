@@ -6,7 +6,7 @@ A integração Google do aplicativo continua independente do plugin Calendar. O 
 
 Em 02/10/2026, o plugin Calendar estava autenticado em `leandrobatista@metodohod.com`, diferente do endereço `leandrobatistam@metodohod.com` informado na conversa. A listagem completa limitada a 01/01–02/10 trouxe 1.370 eventos, incluindo internos. Isso não é um total de consultorias. O primeiro evento dessa listagem foi em 04/02. O plugin Gmail retornou autorização vencida. A conta pessoal informada ainda precisa ser confirmada e conectada: janeiro não pode ser considerado auditado só pela conta empresarial.
 
-Marcos e Graziela têm convites verificáveis na agenda principal. Há convites usando `grazielasutero26@gmail.com`; a identidade dessa conta precisa ser confirmada antes de consolidar como alias. Carina/Karina e Nathan não serão acrescentados com números inventados. Nome de lead contendo Marcos, Karina ou Nathan não identifica o closer.
+Marcos e Graziela têm convites verificáveis na agenda principal. Há convites usando `grazielasutero26@gmail.com`; o proprietário confirmou em 02/10/2026 que é o endereço pessoal da Graziela, consolidado como alias do corporativo. Carina/Karina e Nathan não serão acrescentados com números inventados. Nome de lead contendo Marcos, Karina ou Nathan não identifica o closer.
 
 ## Contagem
 
@@ -25,3 +25,5 @@ Componentes oficiais OpenAI Apps SDK UI: Alert, Badge, SegmentedControl, Choice/
 ## Validação e pendências
 
 `node tests/historical-analytics.mjs` cobre autoria, duplicação de convites, antigo closer, título alternativo, reunião interna, atribuição ambígua, cancelamento, criação São Paulo e dados faltantes. `node tests/daily-summary.mjs` preserva regras operacionais. Validar ainda a importação hospedada completa, totais após leitura, identidade dos aliases e união com a conta pessoal. Nunca apresentar total parcial como trajetória completa.
+
+A consulta histórica reduz cópias em SQL antes da leitura e projeta apenas os campos necessários; descrições limitadas aos primeiros 4.000 caracteres para detectar contato em títulos não padronizados. Contato presente somente além desse trecho exige revisão. Agendas próprias iniciam com páginas de 250 eventos.

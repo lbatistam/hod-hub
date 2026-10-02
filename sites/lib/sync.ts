@@ -10,7 +10,7 @@ export async function syncStep(owner:string,calendarId?:string){
  const available=calendars.find(c=>(!calendarId||c.id===calendarId)&&c.lease_until<Date.now());if(!available)return {status:'busy',pending:true,message:'Uma sincronização já está em andamento.'};
  const c=available,lease=crypto.randomUUID();const locked=await run('UPDATE calendars SET lease=?,lease_until=? WHERE owner=? AND id=? AND lease_until<?',lease,Date.now()+120000,owner,c.id,Date.now());if(!locked.meta.changes)return {status:'busy',pending:true};
  try{
- const token=await accessToken(owner);const renewWindow=!c.page_token&&c.coverage_to&&Date.parse(c.coverage_to)<Date.now()+365*86400000;const pageSize=c.mode?.endsWith(':2500')||(!c.mode&&!c.sync_token&&!c.page_token)?2500:250;let mode=c.page_token?(c.mode||'full'):`${c.sync_token&&!renewWindow?'incremental':'full'}${pageSize===2500?':2500':''}`;let generation=c.generation||crypto.randomUUID();let page=c.page_token;
+ const token=await accessToken(owner);const renewWindow=!c.page_token&&c.coverage_to&&Date.parse(c.coverage_to)<Date.now()+365*86400000;const pageSize=c.role==='owner'&&!c.mode&&!c.sync_token&&!c.page_token?250:c.mode?.endsWith(':2500')||(!c.mode&&!c.sync_token&&!c.page_token)?2500:250;let mode=c.page_token?(c.mode||'full'):`${c.sync_token&&!renewWindow?'incremental':'full'}${pageSize===2500?':2500':''}`;let generation=c.generation||crypto.randomUUID();let page=c.page_token;
  const from=c.coverage_from||'2020-01-01T00:00:00-03:00';const to=(!renewWindow&&c.coverage_to)||new Date(Date.now()+730*86400000).toISOString();
  // Each page is a transaction. Only the final page advances the sync cursor.
  const u=new URL(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(c.id)}/events`);

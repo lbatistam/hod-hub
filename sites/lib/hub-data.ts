@@ -43,8 +43,26 @@ export async function hubData(owner:string,date:string){
  const availability=Array.from({length:15},(_,i)=>i+8).map(h=>{const start=DateTime.fromISO(`${date}T${String(h).padStart(2,'0')}:00`,{zone}),end=start.plus({hours:1});const reliable=active.filter(c=>c.last_sync&&!c.error&&Date.parse(c.coverage_from||'')<=start.toMillis()&&Date.parse(c.coverage_to||'')>=end.toMillis());const available=reliable.filter(c=>!busy.some(b=>b.calendar_id===c.id&&Date.parse(b.starts_at)<end.toMillis()&&Date.parse(b.ends_at)>start.toMillis()));return {h,reliable:reliable.map(c=>c.closer),start:start.toFormat('HH:mm'),end:end.toFormat('HH:mm'),available:available.map(c=>({name:c.closer})),capacity:reliable.length,occupied:reliable.length-available.length,unavailable:active.length-reliable.length}});
  const selected=calendars.filter(c=>c.selected||c.role==='owner');const complete=selected.length>0&&selected.every(c=>c.last_sync&&!c.error&&!c.page_token&&!c.generation);
  const dailySummary=buildDailySummary(rows,date,now,complete);
- const historicalSources=await all<HistoricalSource>('SELECT canonical_id,calendar_id,raw,created_at,starts_at,deleted FROM google_events WHERE owner=?',owner);
- const personalCalendars=calendars.filter(c=>c.role==='owner');
- const historical=historicalAnalytics(historicalSources,personalCalendars.map(c=>c.id),personalCalendars.length>0&&personalCalendars.every(c=>Boolean(c.last_sync&&!c.error&&!c.page_token&&!c.generation)),DateTime.now().setZone(zone).toISODate()!);
+ const historical=await readHistoricalAnalytics(owner,calendars);
  return {historicalAnalytics:historical,dailySummary,rows:rows.filter(c=>c.date===date||c.createdAt&&DateTime.fromISO(c.createdAt,{zone}).toISODate()===date),analyticsRecords:rows.filter(c=>c.kind==='consultoria'&&!c.over).map(c=>({id:c.id,closer:c.closer,color:c.color,date:c.date,created:c.createdAt?DateTime.fromISO(c.createdAt,{zone}).toISODate()||'':'',time:c.time,former:Boolean(c.former),creationRecord:Boolean(c.creationRecord)})),calendars:calendars.map(({sync_token,page_token,generation,lease_until,...c})=>({...c,syncing:Boolean(page_token||generation),lease:undefined,owner:undefined})),availability,preferences:prefs?JSON.parse(prefs.json):{},connection:conn?.status||'disconnected',historyCoverage:(calendars.some(c=>c.last_sync)?'Eventos acessíveis desde 01/01/2020 até dois anos à frente. Eventos excluídos antes da conexão e marcações do app local não são reconstruídos pelo Google. Novos leads são classificados somente dentro do histórico disponível.':'Importação ainda não concluída. Os totais não comprovam ausência de registros.'),readAt:new Date().toISOString(),source:'google_calendar_persisted'};
+}
+
+export async function readHistoricalAnalytics(owner:string,existingCalendars?:CalendarRow[]){
+ const calendars=existingCalendars||await all<CalendarRow>('SELECT * FROM calendars WHERE owner=?',owner);
+ // Never materialize full descriptions/attachments from every shared-calendar copy in a Worker.
+ // Project only historical fields and bound the career interval before reading into memory.
+ const sources=await all<HistoricalSource>(`WITH candidates AS (
+ SELECT e.*,ROW_NUMBER() OVER(PARTITION BY e.canonical_id ORDER BY e.deleted,CASE WHEN c.role='owner' THEN 0 ELSE 1 END,e.calendar_id) rn,
+ MIN(NULLIF(e.created_at,'')) OVER(PARTITION BY e.canonical_id) first_created
+ FROM google_events e JOIN calendars c ON c.owner=e.owner AND c.id=e.calendar_id
+ WHERE e.owner=? AND (e.created_at>='2026-01-01T00:00:00-03:00' OR e.starts_at>='2026-01-01T00:00:00-03:00'))
+ SELECT canonical_id,calendar_id,first_created created_at,starts_at,deleted,
+ json_object('summary',title,'created',first_created,'start',json_object('dateTime',starts_at),
+ 'organizer',json_object('email',json_extract(raw,'$.organizer.email')),
+ 'creator',json_object('email',json_extract(raw,'$.creator.email')),
+ 'attendees',json(COALESCE((SELECT json_group_array(json_object('email',json_extract(value,'$.email'))) FROM json_each(candidates.raw,'$.attendees')),'[]')),
+ 'description',substr(json_extract(raw,'$.description'),1,4000)) raw
+ FROM candidates WHERE rn=1`,owner);
+ const personal=calendars.filter(c=>c.role==='owner');
+ return historicalAnalytics(sources,personal.map(c=>c.id),personal.length>0&&personal.every(c=>Boolean(c.last_sync&&!c.error&&!c.page_token&&!c.generation)),DateTime.now().setZone(zone).toISODate()!);
 }
