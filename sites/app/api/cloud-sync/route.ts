@@ -1,0 +1,5 @@
+import {hubData} from '@/lib/hub-data';
+import {accessToken} from '@/lib/google-connection';
+import {all} from '@/db/raw';import {syncRound} from '@/lib/sync';import {noStore,failure} from '@/lib/google-proof';
+export const dynamic='force-dynamic';
+export async function POST(request:Request){try{const body=await request.json().catch(()=>({})) as {verify?:boolean;auditDate?:string};const owners=await all<{owner:string}>("SELECT owner FROM google_connections WHERE status='connected'");const results=[];for(const u of owners){if(body.verify)await accessToken(u.owner,true);const result=await syncRound(u.owner);if(body.auditDate&&/^\d{4}-\d{2}-\d{2}$/.test(body.auditDate)){const d=await hubData(u.owner,body.auditDate);results.push({...result,dailySummary:d.dailySummary,meetings:d.rows.filter(c=>c.date===body.auditDate).map(c=>({id:c.id,name:c.name,time:c.time,closer:c.closer,kind:c.kind,googleStruck:c.googleStruck,passedToCloser:c.passedToCloser}))})}else results.push(result);}return Response.json({status:'success',results},{headers:noStore})}catch(e){return failure(e)}}

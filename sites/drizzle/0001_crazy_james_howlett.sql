@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `idx_history_owner_request` ON `operational_history` (`owner`,`request_id`);

@@ -11,6 +11,16 @@ O HOD Hub transforma dados do Google Agenda em uma visão operacional única. O 
 
 > **Produto único:** existe apenas HOD Hub. A branch `main` é a base ativa e evolutiva; “V1” e “V2” são apenas referências informais ao escopo de uma atualização, nunca versões paralelas do produto.
 
+## Aplicativo atual na nuvem — 01/10/2026
+
+A interface e o backend hospedados do HOD Hub estão versionados em [`sites/`](sites/README.md): React, TypeScript, Tailwind 4, OpenAI Apps SDK UI oficial, Cloudflare Workers e D1. Aplicativo privado: https://hod-hub-operacao.leandrobm.chatgpt.site . O código local anterior abaixo permanece preservado; ele não é requisito para o aplicativo na nuvem funcionar.
+
+**Resumo Diário atual:** agendamentos usam a data da reunião; qualificados são primeiros nomes criados na data selecionada; reagendamentos são novas criações nessa data de nomes previamente vistos. Passadas são consultorias da data na agenda de outro closer, independente do horário; no Rafael, não passadas. No-show somente com sinal de evento riscado no Google (declined da própria agenda); Compareceu sai do resumo e permanece no Organograma. Criação e reunião sempre têm datas e horários separados. Espelhos de convite e recorrências não criam novas qualificações. Consulte [as regras e lacunas](sites/BACKEND.md).
+
+A tela ativa sincroniza automaticamente, com espera de 10 segundos entre ciclos. Com o app fechado, existe uma tarefa horária em nuvem (limite do Sites). Login do aplicativo e consentimento Google são separados. Nenhum segredo, banco ou token é versionado.
+
+## Implementação local preservada
+
 ## O que o projeto entrega
 
 - **Início:** visão executiva do dia, próxima consultoria, pendências e atalhos.

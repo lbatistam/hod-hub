@@ -1,0 +1,71 @@
+@import "tailwindcss";
+@import "@openai/apps-sdk-ui/css";
+@source "../node_modules/@openai/apps-sdk-ui";
+
+/* Official component motion is enabled. Respect both OS and local preferences. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+[data-motion="reduced"] *, [data-motion="reduced"] *::before, [data-motion="reduced"] *::after {
+  animation: none !important; transition: none !important; scroll-behavior: auto !important;
+}
+.hod-motion-region:not(:has([data-motion-content])) { display: none; }
+.hod-dialog-transition[data-entering] .hod-dialog { opacity: 0; transform: translateX(64px); }
+.hod-dialog-transition[data-entering] .hod-backdrop { opacity: 0; }
+.hod-dialog-transition[data-entering-active] .hod-dialog,
+.hod-dialog-transition[data-exiting][data-interrupted] .hod-dialog {
+  opacity: 1; transform: translateX(0); transition: transform 280ms var(--cubic-enter), opacity 280ms var(--cubic-enter);
+}
+.hod-dialog-transition[data-entering-active] .hod-backdrop,
+.hod-dialog-transition[data-exiting][data-interrupted] .hod-backdrop {
+  opacity: 1; transition: opacity 280ms var(--cubic-enter);
+}
+.hod-dialog-transition[data-exiting-active] .hod-dialog,
+.hod-dialog-transition[data-entering][data-interrupted] .hod-dialog {
+  opacity: 0; transform: translateX(64px); transition: transform 150ms var(--cubic-exit), opacity 150ms var(--cubic-exit);
+}
+.hod-dialog-transition[data-exiting-active] .hod-backdrop,
+.hod-dialog-transition[data-entering][data-interrupted] .hod-backdrop {
+  opacity: 0; transition: opacity 150ms var(--cubic-exit);
+}
+body { margin: 0; background: var(--color-surface); color: var(--color-text); font-family: var(--font-sans); }
+.hod-brand { background: #b6e969; color: #101c32; }
+.hod-navigation { display: flex; flex-direction: column; gap: calc(var(--spacing) * 2); }
+.hod-sidebar { width: 232px; position: fixed; inset: 0 auto 0 0; display: flex; flex-direction: column; }
+.hod-main { margin-left: 232px; min-width: 0; }
+.hod-dialog { position: fixed; inset: 0 0 0 auto; margin: 0; height: 100dvh; max-height: 100dvh; width: min(480px,100vw); max-width: 100vw; border: 0; padding: 0; color: var(--color-text); background: var(--color-surface); }
+.hod-backdrop { position: fixed; inset: 0; background: var(--dialog-backdrop-dim-background); }
+.hod-table { width: 100%; border-collapse: collapse; min-width: 760px; }
+.hod-table th, .hod-table td { text-align: left; padding: calc(var(--spacing)*4); border-bottom: 1px solid var(--color-border); }
+.hod-table th { color: var(--color-text-secondary); font-weight: var(--font-weight-medium); }
+.hod-board { display: grid; grid-template-columns: repeat(4,minmax(248px,1fr)); gap: calc(var(--spacing)*4); overflow-x: auto; align-items: start; padding-bottom: calc(var(--spacing)*4); }
+.hod-card { user-select: text; }
+[data-density="compact"] .hod-card { padding: calc(var(--spacing)*3); }
+@media (max-width: 767px) {
+  .hod-sidebar { position: static; width: auto; }
+  .hod-navigation { flex-direction: row; overflow-x: auto; }
+  .hod-main { margin-left: 0; }
+  .hod-board { grid-template-columns: repeat(4,260px); }
+}
+
+/* Incoming content controls height; outgoing content never delays the new action. */
+.hod-content-swap { position: relative; isolation: isolate; }
+.hod-content-swap > [data-entering] { opacity: 0; transform: translateY(10px); }
+.hod-content-swap > [data-entering-active],
+.hod-content-swap > [data-exiting][data-interrupted] {
+ opacity: 1; transform: translateY(0); transition: opacity 240ms var(--cubic-enter), transform 240ms var(--cubic-enter);
+}
+.hod-content-swap > [data-exiting] { position: absolute; inset: 0; pointer-events: none; }
+.hod-content-swap > [data-exiting-active],
+.hod-content-swap > [data-entering][data-interrupted] {
+ opacity: 0; transform: translateY(-4px); transition: opacity 140ms var(--cubic-exit), transform 140ms var(--cubic-exit);
+}
+
+.hod-meter-fill { transform-origin: left; transition: transform 240ms var(--cubic-move); }
+@media (hover: hover) and (pointer: fine) {
+ .hod-card { transition: transform 180ms var(--cubic-enter), border-color var(--transition-duration-basic) var(--transition-ease-basic); }
+ .hod-card:hover { transform: translateY(-2px); }
+ .hod-card:active { transform: translateY(0) scale(0.99); }
+}
+/* Retained list exits are visual only and cannot intercept pointer actions. */
+.hod-board [data-exiting] { pointer-events: none; }
