@@ -52,3 +52,6 @@ Tarefa em nuvem criada e habilitada: Automation_91b823f60e68819189c0542a69edfa8d
 Cópias do mesmo evento: a cópia ativa de um closer regular prevalece sobre a cópia ativa no Rafael. Uma cópia excluída do closer não comprova distribuição atual. Estado manual não fabrica o sinal Google riscado; a contagem diária de no-show usa a evidência Google, preservando os estados manuais sem apagar histórico. O endpoint protegido de atualização aceita auditDate para conferir as métricas e os eventos da data após sincronização, sem devolver credenciais.
 
 Referência de evidência Google: https://developers.google.com/workspace/calendar/api/v3/reference/events (attendees.responseStatus e attendees.self). A API não fornece estilo visual; a regra operacional usa declined do participante da própria agenda, que é o sinal de recusa, como no app anterior.
+
+### Acontecidas — 01/10/2026
+Regra operacional definida pelo usuário: agendamentos da data menos no-shows Google. O backend retorna o total e IDs da mesma base, sem exigir fim do horário, distribuição para closer ou Compareceu manual. É o complemento das consultorias riscadas, não uma comprovação independente de presença. Categoria dedicada em controle segmentado, com busca e exportação mantendo a base selecionada.

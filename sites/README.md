@@ -24,3 +24,6 @@ Atualização incremental automática enquanto a tela está ativa: espera 10 seg
 Instalar com npm run install:ci; desenvolvimento npm run dev -- --port 4318; validar npx tsc --noEmit e node tests/daily-summary.mjs; compilar npm run build. A hospedagem usa Worker ESM, não um servidor Express tradicional.
 
 BACKEND.md documenta arquitetura, segurança, persistência, cobertura e regras. GOOGLE_SETUP.md descreve configuração OAuth. DESIGN.md e MOTION.md documentam a interface oficial. Não versionar .env, tokens, banco ou .sites-runtime. O aplicativo local existente permanece preservado durante a continuidade do produto.
+
+### Acontecidas — 01/10/2026
+Regra operacional definida pelo usuário: agendamentos da data menos no-shows Google. O backend retorna o total e IDs da mesma base, sem exigir fim do horário, distribuição para closer ou Compareceu manual. É o complemento das consultorias riscadas, não uma comprovação independente de presença. Categoria dedicada em controle segmentado, com busca e exportação mantendo a base selecionada.
