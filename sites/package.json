@@ -17,6 +17,7 @@
     "@openai/apps-sdk-ui": "^0.2.2",
     "clsx": "2.1.1",
     "drizzle-orm": "0.45.2",
+    "fflate": "^0.8.3",
     "luxon": "^3.7.2",
     "next": "16.3.4",
     "radix-ui": "^1.6.7",

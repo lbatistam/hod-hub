@@ -7,7 +7,7 @@ export async function GET(){try{const user=await identity();const owner=user.use
  one('SELECT COUNT(*) AS n,COALESCE(SUM(deleted),0) AS deleted,MAX(json_extract(raw,\'$.updated\')) AS updated FROM google_events WHERE owner=?',owner),
  one('SELECT COUNT(*) AS n,MAX(at) AS at FROM operational_history WHERE owner=?',owner),
  one('SELECT updated_at FROM preferences WHERE owner=?',owner),
- one('SELECT status FROM google_connections WHERE owner=?',owner),
+ all('SELECT account,status,connected_at FROM google_accounts WHERE owner=? ORDER BY account',owner),
  all<{id:string;selected:number;last_sync:string|null;error:string|null;syncing:number}>('SELECT id,selected,last_sync,error,(page_token IS NOT NULL OR generation IS NOT NULL) AS syncing FROM calendars WHERE owner=? ORDER BY id',owner)
  ]);
  const payload=JSON.stringify([events,history,prefs,connection,calendars.map(c=>[c.id,c.selected,Boolean(c.last_sync),c.error,c.syncing])]);

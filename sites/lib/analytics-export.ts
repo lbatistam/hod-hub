@@ -1,0 +1,31 @@
+import {DateTime} from 'luxon';
+import {zipSync,strToU8} from 'fflate';
+import type {HistoricalAnalytics} from './historical-analytics';
+type Cell=string|number;
+export function exportDataset(data:HistoricalAnalytics,from:string,to:string,dimension:string,team:string){
+ const records=data.records.filter(r=>{const day=dimension==='meeting'?r.date:r.created;return day>=from&&day<=to&&(team==='all'||(team==='former'?r.former:!r.former))});
+ const ranks=new Map<string,{closer:string;count:number;status:string}>();for(const r of records){if(r.attribution!=='verified')continue;const rank=ranks.get(r.closer)||{closer:r.closer,count:0,status:r.former?r.formerLabel:'Atual'};rank.count++;ranks.set(r.closer,rank)}
+ const ranking=[...ranks.values()].sort((a,b)=>b.count-a.count||a.closer.localeCompare(b.closer));
+ const monthly=new Map<string,number>();for(let m=DateTime.fromISO(from).startOf('month');m.toISODate()!<=to;m=m.plus({months:1})){monthly.set(m.toFormat('yyyy-MM'),0);if(monthly.size>120)break}for(const r of records){const m=(dimension==='meeting'?r.date:r.created).slice(0,7);monthly.set(m,(monthly.get(m)||0)+1)}
+ const partial=!data.coverage.complete||!data.coverage.personalConnected;
+ const months=[...monthly].sort(([a],[b])=>a.localeCompare(b)).map(([month,count])=>({month,count,coverage:partial?'Parcial · cobertura pendente':'Agendas conectadas importadas'}));
+ return {exportedAt:new Date().toISOString(),timeZone:'America/Sao_Paulo',filters:{from,to,dimension,team},coverage:data.coverage,partial,total:records.length,review:records.filter(r=>r.attribution==='review').length,records,ranking,months};
+}
+export function csv(rows:Cell[][]){const escape=(v:Cell)=>{let s=String(v);if(typeof v==='string'&&/^[\s]*[=+@-]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"'};return '\uFEFF'+rows.map(row=>row.map(escape).join(';')).join('\r\n')+'\r\n'}
+export function sheets(d:ReturnType<typeof exportDataset>){return [
+ {name:'Agendamentos',rows:[['ID','Contato','Criado em (São Paulo)','Reunião em (São Paulo)','Closer','Equipe','Atribuição','Motivo da revisão','Cancelado'],...d.records.map(r=>[r.id,r.name,r.createdAt?DateTime.fromISO(r.createdAt,{zone:d.timeZone}).toFormat('yyyy-MM-dd HH:mm:ss'):'',DateTime.fromISO(r.startsAt,{zone:d.timeZone}).toFormat('yyyy-MM-dd HH:mm:ss'),r.closer,r.former?r.formerLabel:'Atual',r.attribution==='verified'?'Verificada':'Em revisão',r.reviewReason,r.cancelled?'Sim':'Não'])] as Cell[][]},
+ {name:'Ranking',rows:[['Posição','Closer','Agendamentos','Equipe'],...d.ranking.map((r,i)=>[i+1,r.closer,r.count,r.status])] as Cell[][]},
+ {name:'Meses',rows:[['Mês','Agendamentos','Cobertura'],...d.months.map(r=>[r.month,r.count,r.coverage])] as Cell[][]},
+ {name:'Metodologia',rows:[['Campo','Valor'],['Exportado em',d.exportedAt],['Fuso',d.timeZone],['De',d.filters.from],['Até',d.filters.to],['Base',d.filters.dimension==='meeting'?'Data da reunião':'Data da criação'],['Equipe',d.filters.team],['Total',d.total],['Atribuições em revisão',d.review],['Cobertura',d.partial?'Parcial · não comprova o total da trajetória':'Agendas conectadas importadas'],['Contas lidas',d.coverage.accounts.join(', ')],['Autoria',d.coverage.authorAccounts.join(', ')],['Regra','Eventos únicos; revisões no volume e fora do ranking. Sem métricas de presença. Eventos apagados antes da conexão não são reconstruídos.']] as Cell[][]}
+]}
+function xml(v:string){return v.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g,'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&apos;')}
+function col(i:number){let s='';for(i++;i>0;i=Math.floor((i-1)/26))s=String.fromCharCode(65+(i-1)%26)+s;return s}
+export function xlsx(tabs:ReturnType<typeof sheets>){
+ const ns='http://schemas.openxmlformats.org/spreadsheetml/2006/main',rel='http://schemas.openxmlformats.org/officeDocument/2006/relationships',files:Record<string,Uint8Array>={};const put=(path:string,value:string)=>files[path]=strToU8('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+value);
+ put('[Content_Types].xml',`<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>${tabs.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`);
+ put('_rels/.rels',`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${rel}/officeDocument" Target="xl/workbook.xml"/></Relationships>`);
+ put('xl/workbook.xml',`<workbook xmlns="${ns}" xmlns:r="${rel}"><sheets>${tabs.map((t,i)=>`<sheet name="${xml(t.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`);
+ put('xl/_rels/workbook.xml.rels',`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${tabs.map((_,i)=>`<Relationship Id="rId${i+1}" Type="${rel}/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}</Relationships>`);
+ for(const [i,t] of tabs.entries())put(`xl/worksheets/sheet${i+1}.xml`,`<worksheet xmlns="${ns}"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${t.rows[0].map((_,j)=>`<col min="${j+1}" max="${j+1}" width="${j===0?20:30}" customWidth="1"/>`).join('')}</cols><sheetData>${t.rows.map((row,j)=>`<row r="${j+1}">${row.map((v,k)=>typeof v==='number'?`<c r="${col(k)}${j+1}"><v>${v}</v></c>`:`<c r="${col(k)}${j+1}" t="inlineStr"><is><t xml:space="preserve">${xml(v)}</t></is></c>`).join('')}</row>`).join('')}</sheetData><autoFilter ref="A1:${col(t.rows[0].length-1)}${t.rows.length}"/></worksheet>`);
+ return zipSync(files,{level:6});
+}

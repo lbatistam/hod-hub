@@ -3,14 +3,14 @@ import {accessToken} from './google-connection';
 import {normalizeEvent,type GoogleEvent} from './domain';
 import {ProofError} from './google-proof';
 import {SYNC_FRESHNESS_MS} from './live-policy';
-export type CalendarRow={owner:string;id:string;name:string;role:string;closer:string;team_status:string;selected:number;sync_token:string|null;page_token:string|null;generation:string|null;mode:string|null;last_sync:string|null;error:string|null;lease_until:number;coverage_from:string|null;coverage_to:string|null};
+export type CalendarRow={owner:string;connection_account:string|null;id:string;name:string;role:string;closer:string;team_status:string;selected:number;sync_token:string|null;page_token:string|null;generation:string|null;mode:string|null;last_sync:string|null;error:string|null;lease_until:number;coverage_from:string|null;coverage_to:string|null};
 export async function syncStep(owner:string,calendarId?:string){
  const calendars=await all<CalendarRow>('SELECT * FROM calendars WHERE owner=? AND (selected=1 OR role=\'owner\') ORDER BY COALESCE(last_sync,\'\'), id',owner);
  if(!calendars.length)throw new ProofError(422,'no_calendars','Selecione pelo menos uma agenda nas configurações.');
  const available=calendars.find(c=>(!calendarId||c.id===calendarId)&&c.lease_until<Date.now());if(!available)return {status:'busy',pending:true,message:'Uma sincronização já está em andamento.'};
  const c=available,lease=crypto.randomUUID();const locked=await run('UPDATE calendars SET lease=?,lease_until=? WHERE owner=? AND id=? AND lease_until<?',lease,Date.now()+120000,owner,c.id,Date.now());if(!locked.meta.changes)return {status:'busy',pending:true};
  try{
- const token=await accessToken(owner);const renewWindow=!c.page_token&&c.coverage_to&&Date.parse(c.coverage_to)<Date.now()+365*86400000;const pageSize=c.role==='owner'&&!c.mode&&!c.sync_token&&!c.page_token?250:c.mode?.endsWith(':2500')||(!c.mode&&!c.sync_token&&!c.page_token)?2500:250;let mode=c.page_token?(c.mode||'full'):`${c.sync_token&&!renewWindow?'incremental':'full'}${pageSize===2500?':2500':''}`;let generation=c.generation||crypto.randomUUID();let page=c.page_token;
+ const token=await accessToken(owner,false,c.connection_account||undefined);const renewWindow=!c.page_token&&c.coverage_to&&Date.parse(c.coverage_to)<Date.now()+365*86400000;const pageSize=c.role==='owner'&&!c.mode&&!c.sync_token&&!c.page_token?250:c.mode?.endsWith(':2500')||(!c.mode&&!c.sync_token&&!c.page_token)?2500:250;let mode=c.page_token?(c.mode||'full'):`${c.sync_token&&!renewWindow?'incremental':'full'}${pageSize===2500?':2500':''}`;let generation=c.generation||crypto.randomUUID();let page=c.page_token;
  const from=c.coverage_from||'2020-01-01T00:00:00-03:00';const to=(!renewWindow&&c.coverage_to)||new Date(Date.now()+730*86400000).toISOString();
  // Each page is a transaction. Only the final page advances the sync cursor.
  const u=new URL(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(c.id)}/events`);
@@ -19,7 +19,7 @@ export async function syncStep(owner:string,calendarId?:string){
  if(page)u.searchParams.set('pageToken',page);
  const response=await fetch(u,{headers:{Authorization:`Bearer ${token}`},signal:AbortSignal.timeout(20000)});
  if(response.status===410){await run("UPDATE calendars SET sync_token=NULL,page_token=NULL,generation=NULL,mode=NULL,error=NULL WHERE owner=? AND id=? AND lease=?",owner,c.id,lease);return {status:'reset',pending:true,calendar:c.name,message:'Reconstruindo a leitura após expiração do cursor.'};}
- if(!response.ok){const code=response.status===401?'reconnect_required':'google_unavailable';if(response.status===401)await run("UPDATE google_connections SET expires=0 WHERE owner=?",owner);throw new ProofError(response.status===401?409:502,code,`Não foi possível sincronizar ${c.name} (Google ${response.status}). Os registros anteriores foram preservados.`)}
+ if(!response.ok){const code=response.status===401?'reconnect_required':'google_unavailable';if(response.status===401){if(c.connection_account)await run("UPDATE google_accounts SET expires=0 WHERE owner=? AND account=?",owner,c.connection_account);else await run("UPDATE google_connections SET expires=0 WHERE owner=?",owner);}throw new ProofError(response.status===401?409:502,code,`Não foi possível sincronizar ${c.name} (Google ${response.status}). Os registros anteriores foram preservados.`)}
  const data=await response.json() as {items?:GoogleEvent[];nextPageToken?:string;nextSyncToken?:string};if(data.items!==undefined&&!Array.isArray(data.items))throw new Error('Malformed sync');
  const statements:D1PreparedStatement[]=[];
  const ids=(data.items||[]).map(e=>e.id).filter(Boolean);const previous=new Map<string,{google_id:string;canonical_id:string;starts_at:string}>();
