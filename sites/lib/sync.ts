@@ -3,9 +3,9 @@ import {accessToken} from './google-connection';
 import {normalizeEvent,type GoogleEvent} from './domain';
 import {ProofError} from './google-proof';
 import {SYNC_FRESHNESS_MS} from './live-policy';
-export type CalendarRow={owner:string;id:string;name:string;closer:string;team_status:string;selected:number;sync_token:string|null;page_token:string|null;generation:string|null;mode:string|null;last_sync:string|null;error:string|null;lease_until:number;coverage_from:string|null;coverage_to:string|null};
+export type CalendarRow={owner:string;id:string;name:string;role:string;closer:string;team_status:string;selected:number;sync_token:string|null;page_token:string|null;generation:string|null;mode:string|null;last_sync:string|null;error:string|null;lease_until:number;coverage_from:string|null;coverage_to:string|null};
 export async function syncStep(owner:string,calendarId?:string){
- const calendars=await all<CalendarRow>('SELECT * FROM calendars WHERE owner=? AND selected=1 ORDER BY COALESCE(last_sync,\'\'), id',owner);
+ const calendars=await all<CalendarRow>('SELECT * FROM calendars WHERE owner=? AND (selected=1 OR role=\'owner\') ORDER BY COALESCE(last_sync,\'\'), id',owner);
  if(!calendars.length)throw new ProofError(422,'no_calendars','Selecione pelo menos uma agenda nas configurações.');
  const available=calendars.find(c=>(!calendarId||c.id===calendarId)&&c.lease_until<Date.now());if(!available)return {status:'busy',pending:true,message:'Uma sincronização já está em andamento.'};
  const c=available,lease=crypto.randomUUID();const locked=await run('UPDATE calendars SET lease=?,lease_until=? WHERE owner=? AND id=? AND lease_until<?',lease,Date.now()+120000,owner,c.id,Date.now());if(!locked.meta.changes)return {status:'busy',pending:true};
@@ -46,11 +46,11 @@ export async function syncStep(owner:string,calendarId?:string){
 
 // Bound concurrency to three distinct calendar leases; each keeps its own cursor.
 export async function syncRound(owner:string){
- const targets=await all<{id:string}>("SELECT id FROM calendars WHERE owner=? AND selected=1 AND lease_until<? AND (last_sync IS NULL OR page_token IS NOT NULL OR last_sync<?) ORDER BY COALESCE(last_sync,''),id LIMIT 3",owner,Date.now(),new Date(Date.now()-SYNC_FRESHNESS_MS).toISOString());
+ const targets=await all<{id:string}>("SELECT id FROM calendars WHERE owner=? AND (selected=1 OR role='owner') AND lease_until<? AND (last_sync IS NULL OR page_token IS NOT NULL OR last_sync<?) ORDER BY COALESCE(last_sync,''),id LIMIT 3",owner,Date.now(),new Date(Date.now()-SYNC_FRESHNESS_MS).toISOString());
  if(!targets.length)return {status:'fresh',pending:false,events:0,results:[]};
  const settled=await Promise.allSettled(targets.map(c=>syncStep(owner,c.id)));
  const results=settled.map(r=>r.status==='fulfilled'?r.value:{status:'error',pending:true,message:r.reason instanceof ProofError?r.reason.message:'Não foi possível atualizar esta agenda. Os dados salvos foram preservados.'});
  if(settled.every(r=>r.status==='rejected'))throw (settled[0] as PromiseRejectedResult).reason;
- const remaining=await one<{n:number}>("SELECT COUNT(*) n FROM calendars WHERE owner=? AND selected=1 AND (last_sync IS NULL OR page_token IS NOT NULL OR last_sync<? OR error IS NOT NULL)",owner,new Date(Date.now()-SYNC_FRESHNESS_MS).toISOString());
+ const remaining=await one<{n:number}>("SELECT COUNT(*) n FROM calendars WHERE owner=? AND (selected=1 OR role='owner') AND (last_sync IS NULL OR page_token IS NOT NULL OR last_sync<? OR error IS NOT NULL)",owner,new Date(Date.now()-SYNC_FRESHNESS_MS).toISOString());
  return {status:results.some(r=>r.status==='error')?'partial':results.every(r=>r.status==='busy')?'busy':'success',pending:Boolean(remaining?.n),events:results.reduce((n,r)=>n+('events' in r?Number(r.events):0),0),results};
 }
