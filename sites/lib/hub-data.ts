@@ -51,18 +51,24 @@ export async function readHistoricalAnalytics(owner:string,existingCalendars?:Ca
  const calendars=existingCalendars||await all<CalendarRow>('SELECT * FROM calendars WHERE owner=?',owner);
  // Never materialize full descriptions/attachments from every shared-calendar copy in a Worker.
  // Project only historical fields and bound the career interval before reading into memory.
+ const personal=calendars.filter(c=>c.role==='owner');
+ const prefs=await one<{json:string}>('SELECT json FROM preferences WHERE owner=?',owner);
+ const aliases=(prefs?JSON.parse(prefs.json).historicalAccounts:[])||[];
+ const authors=[...new Set([...personal.map(c=>c.id),...aliases])].filter((x):x is string=>typeof x==='string');
+ if(!authors.length)return historicalAnalytics([],[],false,DateTime.now().setZone(zone).toISODate()!);
+ const placeholders=authors.map(()=>'?').join(',');
  const sources=await all<HistoricalSource>(`WITH candidates AS (
  SELECT e.*,ROW_NUMBER() OVER(PARTITION BY e.canonical_id ORDER BY e.deleted,CASE WHEN c.role='owner' THEN 0 ELSE 1 END,e.calendar_id) rn,
  MIN(NULLIF(e.created_at,'')) OVER(PARTITION BY e.canonical_id) first_created
  FROM google_events e JOIN calendars c ON c.owner=e.owner AND c.id=e.calendar_id
- WHERE e.owner=? AND (e.created_at>='2026-01-01T00:00:00-03:00' OR e.starts_at>='2026-01-01T00:00:00-03:00'))
+ WHERE e.owner=? AND (e.created_at>='2026-01-01T00:00:00-03:00' OR e.starts_at>='2026-01-01T00:00:00-03:00')
+ AND (lower(json_extract(e.raw,'$.organizer.email')) IN (${placeholders}) OR lower(json_extract(e.raw,'$.creator.email')) IN (${placeholders})))
  SELECT canonical_id,calendar_id,first_created created_at,starts_at,deleted,
  json_object('summary',title,'created',first_created,'start',json_object('dateTime',starts_at),
  'organizer',json_object('email',json_extract(raw,'$.organizer.email')),
  'creator',json_object('email',json_extract(raw,'$.creator.email')),
  'attendees',json(COALESCE((SELECT json_group_array(json_object('email',json_extract(value,'$.email'))) FROM json_each(candidates.raw,'$.attendees')),'[]')),
  'description',substr(json_extract(raw,'$.description'),1,4000)) raw
- FROM candidates WHERE rn=1`,owner);
- const personal=calendars.filter(c=>c.role==='owner');
- return historicalAnalytics(sources,personal.map(c=>c.id),personal.length>0&&personal.every(c=>Boolean(c.last_sync&&!c.error&&!c.page_token&&!c.generation)),DateTime.now().setZone(zone).toISODate()!);
+ FROM candidates WHERE rn=1`,owner,...authors,...authors);
+ return historicalAnalytics(sources,personal.map(c=>c.id),personal.length>0&&personal.every(c=>Boolean(c.last_sync&&!c.error&&!c.page_token&&!c.generation)),DateTime.now().setZone(zone).toISODate()!,aliases,(prefs?JSON.parse(prefs.json).historicalCloserAliases:[])||[],(prefs?JSON.parse(prefs.json).historicalCloserProposals:[])||[]);
 }

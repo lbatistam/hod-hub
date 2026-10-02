@@ -1,18 +1,19 @@
 import {DateTime} from 'luxon';
 import {configuredClosers} from './rules/closers';
-import {isConsultoriaTitle} from './rules/calendar-rules';
+import {isConsultoriaTitle,extractConsultoriaLead} from './rules/calendar-rules';
 import type {GoogleEvent} from './domain';
 export type HistoricalSource={canonical_id:string;calendar_id:string;raw:string;created_at:string;starts_at:string;deleted:number};
-export type HistoricalBooking={id:string;closer:string;color:string;date:string;created:string;time:string;former:boolean;creationRecord:boolean;attribution:'verified'|'review';cancelled:boolean;formerLabel:'Desligado'|'Desligada'};
-export type HistoricalAnalytics={records:HistoricalBooking[];coverage:{accounts:string[];from:string;until:string;complete:boolean;personalConnected:boolean;review:number;withoutCreated:number;excludedOtherAuthors:number;excludedInternal:number;cancelled:number;sourceCopies:number;uniqueEvents:number}};
+export type HistoricalBooking={id:string;closer:string;color:string;date:string;created:string;time:string;former:boolean;creationRecord:boolean;attribution:'verified'|'review';cancelled:boolean;formerLabel:'Antigo membro'|'Antiga membra'|'Ex-Closer'};
+export type HistoricalCandidate={email:string;events:number;distinctLeads:number;company:boolean;proposedName?:string};
+export type HistoricalAnalytics={records:HistoricalBooking[];candidates:HistoricalCandidate[];coverage:{accounts:string[];authorAccounts:string[];from:string;until:string;complete:boolean;personalConnected:boolean;review:number;withoutCreated:number;excludedOtherAuthors:number;excludedInternal:number;cancelled:number;sourceCopies:number;uniqueEvents:number}};
 const internal=/\b(daily|weekly|alinhamento|reuni[aã]o interna|treinamento.*crm|comercial.*sdr|sdr.*comercial)\b/i;
-export function historicalAnalytics(sources:HistoricalSource[],accounts:string[],complete:boolean,until:string):HistoricalAnalytics{
- const own=new Set(accounts.map(x=>x.toLowerCase()));
- const roster=new Map(configuredClosers.filter(c=>!['reuniao@metodohod.com','alvaro@metodohod.com'].includes(c.calendar)).map(c=>[c.calendar,c]));
- // Alias confirmed by the owner on 02/10/2026; corporate and personal invitations share one closer.
- const graziela=roster.get('graziela@metodohod.com');if(graziela)roster.set('grazielasutero26@gmail.com',graziela);
+export function historicalAnalytics(sources:HistoricalSource[],accounts:string[],complete:boolean,until:string,aliases:string[]=[],closerAliases:{email:string;name:string}[]=[],proposals:{email:string;name:string}[]=[]):HistoricalAnalytics{
+ const own=new Set([...accounts,...aliases].map(x=>x.toLowerCase()));
+ const roster=new Map(configuredClosers.filter(c=>c.calendar!=='reuniao@metodohod.com').map(c=>[c.calendar,c]));
+ // Aliases are owner-confirmed person mappings stored privately, independent of calendar access.
+ for(const alias of closerAliases){const person=configuredClosers.find(c=>c.name===alias.name&&c.calendar!=='reuniao@metodohod.com');if(person&&!own.has(alias.email.toLowerCase()))roster.set(alias.email.toLowerCase(),person)}
  const groups=new Map<string,HistoricalSource[]>();for(const s of sources){const list=groups.get(s.canonical_id)||[];list.push(s);groups.set(s.canonical_id,list)}
- const coverage={accounts,from:'2026-01-01',until,complete,personalConnected:accounts.some(a=>a.endsWith('@gmail.com')),review:0,withoutCreated:0,excludedOtherAuthors:0,excludedInternal:0,cancelled:0,sourceCopies:sources.length,uniqueEvents:groups.size};const records:HistoricalBooking[]=[];
+ const coverage={accounts,authorAccounts:[...own],from:'2026-01-01',until,complete,personalConnected:accounts.some(a=>a.endsWith('@gmail.com')),review:0,withoutCreated:0,excludedOtherAuthors:0,excludedInternal:0,cancelled:0,sourceCopies:sources.length,uniqueEvents:groups.size};const records:HistoricalBooking[]=[];const people=new Map<string,{ids:Set<string>;leads:Set<string>}>();const configured=new Set(configuredClosers.map(c=>c.calendar));
  for(const [id,copies] of groups){const ordered=[...copies].sort((a,b)=>a.deleted-b.deleted||a.calendar_id.localeCompare(b.calendar_id));const primary=ordered.find(s=>own.has(s.calendar_id.toLowerCase()))||ordered[0];let e:GoogleEvent;try{e=JSON.parse(primary.raw)}catch{continue}
  const allEvents=ordered.map(s=>{try{return JSON.parse(s.raw) as GoogleEvent}catch{return null}}).filter((x):x is GoogleEvent=>Boolean(x));
  const hosted=allEvents.some(x=>own.has((x.organizer?.email||'').toLowerCase())||own.has((x.creator?.email||'').toLowerCase()));
@@ -28,10 +29,12 @@ export function historicalAnalytics(sources:HistoricalSource[],accounts:string[]
  const createdAt=allEvents.map(x=>x.created||'').filter(Boolean).sort()[0]||copies.map(s=>s.created_at||'').filter(Boolean).sort()[0]||'';
  const created=createdAt?DateTime.fromISO(createdAt,{zone:'America/Sao_Paulo'}).toISODate()||'':'';
  // Keep future meetings created within the career interval. UI explicitly chooses creation or meeting date.
- if((created||date)<'2026-01-01'||(created||date)>until)continue;
+ if(!(created>='2026-01-01'&&created<=until)&&!(date>='2026-01-01'&&date<=until))continue;
+ for(const email of participants){if(own.has(email)||roster.has(email)||configured.has(email))continue;const person=people.get(email)||{ids:new Set<string>(),leads:new Set<string>()};person.ids.add(id);const lead=(extractConsultoriaLead(title)||title).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s*[-–(].*$/,'').trim();person.leads.add(lead);people.set(email,person)}
  const closer=candidates.length===1?roster.get(candidates[0])!:null;const attribution=closer?'verified':'review';if(!closer)coverage.review++;if(!created)coverage.withoutCreated++;
  const cancelled=copies.every(s=>Boolean(s.deleted));if(cancelled)coverage.cancelled++;
- records.push({id,closer:closer?.name||'Atribuição em revisão',color:closer?.color||'',date,created,time:DateTime.fromISO(start,{zone:'America/Sao_Paulo'}).toFormat('HH:mm'),former:closer?.teamStatus==='former',creationRecord:true,attribution,cancelled,formerLabel:closer&&['Graziela','Karina','Larissa'].includes(closer.name)?'Desligada':'Desligado'});
+ records.push({id,closer:closer?.name||'Atribuição em revisão',color:closer?.color||'',date,created,time:DateTime.fromISO(start,{zone:'America/Sao_Paulo'}).toFormat('HH:mm'),former:Boolean(closer&&['former','sdr'].includes(closer.teamStatus||'')),creationRecord:true,attribution,cancelled,formerLabel:closer?.name==='Álvaro'?'Ex-Closer':closer&&['Graziela','Karina','Larissa'].includes(closer.name)?'Antiga membra':'Antigo membro'});
  }
- return {records,coverage};
+ const candidates=[...people].filter(([email,p])=>email.endsWith('@metodohod.com')||p.leads.size>=3).map(([email,p])=>({email,events:p.ids.size,distinctLeads:p.leads.size,company:email.endsWith('@metodohod.com'),proposedName:proposals.find(a=>a.email===email)?.name})).sort((a,b)=>b.events-a.events||a.email.localeCompare(b.email));
+ return {records,candidates,coverage};
 }
