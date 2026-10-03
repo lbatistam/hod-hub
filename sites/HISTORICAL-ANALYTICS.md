@@ -41,3 +41,5 @@ O proprietário confirmou a identidade pessoal de Nina como Karina e a conta pes
 - Os meses permanecem explicitamente parciais até importar a segunda conta e revisar o material disponível. Zero nesta base não comprova ausência de reuniões. Outubro é um mês ainda em andamento.
 
 Auditoria de cobertura de 02/10: na agenda principal acessível foram encontrados 55 eventos em agosto, 60 em setembro e 4 até 02/10, mas nenhum classificado como consultoria nessa fonte. Nas agendas compartilhadas existem consultorias recentes organizadas/criadas por Rafael e pelos próprios closers. Isso não comprova que o usuário fez esses agendamentos; a base pessoal e eventual auditoria de convites são necessárias antes de atribuir autoria. Não transformar o total geral da operação em total pessoal. As barras sem registros, enquanto parcial, mostram 'A conferir'.
+
+03/10/2026: nome canônico corrigido para Luccas (dois C). Preferências privadas antigas com Lucas continuam resolvendo para a mesma pessoa, inclusive a atribuição pontual de Felipe. Nenhum registro ou total alterado.
