@@ -46,3 +46,12 @@ Auditoria de cobertura de 02/10: na agenda principal acessível foram encontrado
 
 ## Regra vigente — 04/10/2026
 A participação de uma das contas do proprietário no convite é suficiente quando também há closer reconhecido e convidado externo. Não exigir autoria/organização própria para esses eventos, incluindo títulos alternativos. Daily, weekly, alinhamentos e reuniões internas continuam excluídos. Consultorias de autoria própria sem closer identificável permanecem em revisão, preservando o histórico. Mais de um closer permanece ambíguo; aliases da mesma pessoa não duplicam a atribuição. SQL inclui participação em attendees e a classificação centralizada valida closer/convidado. Interface e exportações usam esta mesma regra. Data de criação é do evento Google, não prova de quem executou o agendamento.
+
+## Refinamentos vigentes — 04/10/2026
+- Um evento único soma um agendamento no volume e um crédito em cada closer convidado (deduplicado por pessoa). A soma do ranking pode superar o volume. Filtros de equipe selecionam os créditos de pessoas daquela equipe sem duplicar o evento.
+- Sem closer reconhecido: evento preservado no banco, excluído da contagem histórica e do ranking; deixa de ser pendência.
+- Outros SDRs confirmados pelo proprietário ficam nas preferências privadas (`historicalSdrEmails`). Seus eventos são excluídos desta análise e esses endereços não são tratados como leads/closers.
+- A lista de identidades recorrentes deixou a interface: recorrência isolada não prova função de closer.
+- Diagnóstico de fontes `/api/cloud-sync` com `sourceAudit` mantém cobertura, paginação e amostras recentes dentro do site privado. Não retorna credenciais.
+
+Meses com consultorias nas fontes, mas sem evento elegível ligado às contas do usuário, são rotulados “Sem vínculo identificado”, também na exportação. A linha mensal não conecta lacunas como se fossem queda de atividade comprovada. Cobertura de importação concluída não prova autoria dos eventos sem identidade SDR.
