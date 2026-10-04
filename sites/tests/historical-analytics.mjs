@@ -38,3 +38,7 @@ assert.equal(historicalAnalytics([event('internalTitle',{summary:'Daily Consulto
 console.log('Title-only attribution, repeated leads across months, accent/case normalization and unique credit per closer passed.');
 
 assert.equal(historicalAnalytics([joined],[own],true,'2026-10-04',[],[],[],[],['lead@example.com']).records.length,0);
+
+const business=historicalAnalytics([event('vendor',{summary:'Reunião Estratégica: Metodo Hod + Octadesk'}),event('director',{summary:'Apresentação Poli - Diretoria Home office digital'}),event('project',{summary:'Reunião Evolução de projeto - Metodo HOD & Octadesk'})],[own],true,'2026-10-04');assert.equal(business.records.length,0);assert.equal(business.coverage.excludedInternal,3);
+const prefixed=historicalAnalytics([event('prefix',{summary:'HOD - Giovanna Baltoe'}),event('normal',{summary:'Consultoria Giovanna Baltoe'})],[own],true,'2026-10-04');assert.equal(prefixed.records.length,1);assert.equal(prefixed.coverage.duplicateLeads,1);
+console.log('Vendor/director internal meeting exclusions and HOD prefix lead deduplication passed.');

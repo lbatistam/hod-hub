@@ -19,7 +19,7 @@ export function historicalAnalytics(sources:HistoricalSource[],accounts:string[]
  for(const [id,copies] of groups){const ordered=[...copies].sort((a,b)=>a.deleted-b.deleted||a.calendar_id.localeCompare(b.calendar_id));const primary=ordered.find(s=>own.has(s.calendar_id.toLowerCase()))||ordered[0];let e:GoogleEvent;try{e=JSON.parse(primary.raw)}catch{continue}
  const allEvents=ordered.map(s=>{try{return JSON.parse(s.raw) as GoogleEvent}catch{return null}}).filter((x):x is GoogleEvent=>Boolean(x));
  const hosted=allEvents.some(x=>own.has((x.organizer?.email||'').toLowerCase())||own.has((x.creator?.email||'').toLowerCase()));
- const title=e.summary||'';const namedConsultoria=isConsultoriaTitle(title)||/\bconsultoria\b/i.test(title);if(internal.test(title)){coverage.excludedInternal++;continue}
+ const title=e.summary||'';const namedConsultoria=isConsultoriaTitle(title)||/\bconsultoria\b/i.test(title);if(internal.test(title)||!namedConsultoria&&/octadesk|evolu[cç][aã]o de projeto|diretoria.*home\s*office\s*digital/i.test(title)){coverage.excludedInternal++;continue}
  const participants=[...new Set(allEvents.flatMap(x=>(x.attendees||[]).map(a=>(a.email||'').toLowerCase())))];
  const participating=participants.some(a=>own.has(a));
  if(!namedConsultoria&&!hosted&&!participating){coverage.excludedOtherAuthors++;continue}
@@ -54,7 +54,7 @@ export function historicalAnalytics(sources:HistoricalSource[],accounts:string[]
  const leads=new Map<string,HistoricalBooking>();
  records.sort((a,b)=>Date.parse(a.createdAt||a.startsAt)-Date.parse(b.createdAt||b.startsAt)||a.startsAt.localeCompare(b.startsAt)||a.id.localeCompare(b.id));
  for(const record of records){
-  record.name=record.name.replace(/\s*[([](?:reagendad[oa]|reagendamento|remarcad[oa]|retorno|follow[- ]?up).*$/i,'').trim();
+  record.name=record.name.replace(/^HOD\s*[-–—:|]\s*/i,'').replace(/\s*[([](?:reagendad[oa]|reagendamento|remarcad[oa]|retorno|follow[- ]?up).*$/i,'').trim();
   const key=record.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
   if(!key)continue;
   const previous=leads.get(key);if(!previous){leads.set(key,record);continue}
