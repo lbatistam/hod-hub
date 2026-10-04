@@ -65,13 +65,13 @@ export async function readHistoricalAnalytics(owner:string,existingCalendars?:Ca
  MIN(NULLIF(e.created_at,'')) OVER(PARTITION BY e.canonical_id) first_created
  FROM google_events e JOIN calendars c ON c.owner=e.owner AND c.id=e.calendar_id
  WHERE e.owner=? AND (e.created_at>='2026-01-01T00:00:00-03:00' OR e.starts_at>='2026-01-01T00:00:00-03:00')
- AND (lower(json_extract(e.raw,'$.organizer.email')) IN (${placeholders}) OR lower(json_extract(e.raw,'$.creator.email')) IN (${placeholders})))
+ AND (lower(json_extract(e.raw,'$.organizer.email')) IN (${placeholders}) OR lower(json_extract(e.raw,'$.creator.email')) IN (${placeholders}) OR EXISTS(SELECT 1 FROM json_each(e.raw,'$.attendees') guest WHERE lower(json_extract(guest.value,'$.email')) IN (${placeholders}))))
  SELECT canonical_id,calendar_id,first_created created_at,starts_at,deleted,
  json_object('summary',title,'created',first_created,'start',json_object('dateTime',starts_at),
  'organizer',json_object('email',json_extract(raw,'$.organizer.email')),
  'creator',json_object('email',json_extract(raw,'$.creator.email')),
  'attendees',json(COALESCE((SELECT json_group_array(json_object('email',json_extract(value,'$.email'))) FROM json_each(candidates.raw,'$.attendees')),'[]')),
  'description',substr(json_extract(raw,'$.description'),1,4000)) raw
- FROM candidates WHERE rn=1`,owner,...authors,...authors);
+ FROM candidates WHERE rn=1`,owner,...authors,...authors,...authors);
  return historicalAnalytics(sources,personal.map(c=>c.id),personal.length>0&&personal.every(c=>Boolean(c.last_sync&&!c.error&&!c.page_token&&!c.generation))&&connected.every(a=>a.status==='connected'),DateTime.now().setZone(zone).toISODate()!,aliases,(prefs?JSON.parse(prefs.json).historicalCloserAliases:[])||[],(prefs?JSON.parse(prefs.json).historicalCloserProposals:[])||[],(prefs?JSON.parse(prefs.json).historicalCloserAssignments:[])||[]);
 }

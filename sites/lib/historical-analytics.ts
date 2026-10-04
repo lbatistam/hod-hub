@@ -17,14 +17,16 @@ export function historicalAnalytics(sources:HistoricalSource[],accounts:string[]
  for(const [id,copies] of groups){const ordered=[...copies].sort((a,b)=>a.deleted-b.deleted||a.calendar_id.localeCompare(b.calendar_id));const primary=ordered.find(s=>own.has(s.calendar_id.toLowerCase()))||ordered[0];let e:GoogleEvent;try{e=JSON.parse(primary.raw)}catch{continue}
  const allEvents=ordered.map(s=>{try{return JSON.parse(s.raw) as GoogleEvent}catch{return null}}).filter((x):x is GoogleEvent=>Boolean(x));
  const hosted=allEvents.some(x=>own.has((x.organizer?.email||'').toLowerCase())||own.has((x.creator?.email||'').toLowerCase()));
- if(!hosted){coverage.excludedOtherAuthors++;continue}
  const title=e.summary||'';if(internal.test(title)){coverage.excludedInternal++;continue}
- const participants=[...new Set((e.attendees||[]).map(a=>(a.email||'').toLowerCase()))];
+ const participants=[...new Set(allEvents.flatMap(x=>(x.attendees||[]).map(a=>(a.email||'').toLowerCase())))];
+ const participating=participants.some(a=>own.has(a));
+ if(!hosted&&!participating){coverage.excludedOtherAuthors++;continue}
  const eventRoster=new Map(roster);for(const alias of closerAliases.filter(a=>a.eventId===id)){const person=configuredClosers.find(c=>c.name===(alias.name==='Lucas'?'Luccas':alias.name));if(person)eventRoster.set(alias.email.toLowerCase(),person)}
  let candidates=participants.filter(a=>eventRoster.has(a));candidates=candidates.filter((a,i)=>candidates.findIndex(b=>eventRoster.get(b)?.name===eventRoster.get(a)?.name)===i);if(candidates.length>1)candidates=candidates.filter(a=>a!=='rafael@metodohod.com');
  const external=participants.some(a=>a&&!own.has(a)&&!a.endsWith('@metodohod.com')&&!eventRoster.has(a));
- // Nonstandard titles require verifiable host + closer + lead contact. Internal team meetings cannot become bookings.
+ // Participation is sufficient with closer + external guest. Preserve hosted consultorias with unresolved attribution.
  const leadContact=external||/(?:\+?55\s*)?\(?\d{2}\)?[\s.-]*\d{4,5}[\s.-]*\d{4}\b/.test(e.description||'');
+ if(!hosted&&!(participating&&candidates.length&&external))continue;
  if(!isConsultoriaTitle(title)&&!(candidates.length&&leadContact))continue;
  const start=e.start?.dateTime||e.start?.date||primary.starts_at;const date=DateTime.fromISO(start,{zone:'America/Sao_Paulo'}).toISODate();if(!date)continue;
  const createdAt=allEvents.map(x=>x.created||'').filter(Boolean).sort()[0]||copies.map(s=>s.created_at||'').filter(Boolean).sort()[0]||'';

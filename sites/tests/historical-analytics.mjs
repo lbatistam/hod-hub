@@ -14,3 +14,11 @@ const people=historicalAnalytics([event('personal',{attendees:[{email:'nina.pers
 console.log('Passed: owner attribution, invitation dedup, former closer, nonstandard lead meeting, internal exclusion, ambiguous attribution, preserved cancellation, São Paulo creation date and missing-data disclosure.');
 
 const scoped=historicalAnalytics([event('one',{attendees:[{email:'tulio@metodohod.com'},{email:'former.personal@example.com'}]}),event('two')],[own],true,'2026-10-02',[],[],[],[{id:'one',name:'Lucas'}]);assert.equal(scoped.records.find(r=>r.id==='one').closer,'Luccas');assert.equal(scoped.records.find(r=>r.id==='two').closer,'Marcos');
+
+// Owner participation replaces mandatory creator/organizer attribution (04/10/2026).
+const joined=event('joined',{organizer:{email:'rafael@metodohod.com'},creator:{email:'rafael@metodohod.com'},attendees:[{email:own},{email:'luccas@metodohod.com'},{email:'lead@example.com'}]});
+const joinedCopy={...joined,calendar_id:'luccas@metodohod.com'};
+const personalJoined=event('personalJoined',{summary:'Conversa com cliente',organizer:{email:'rafael@metodohod.com'},attendees:[{email:'leandrobatsta@gmail.com'},{email:'marcos@metodohod.com'},{email:'lead@example.com'}]});
+const audit=historicalAnalytics([joined,joinedCopy,personalJoined,{...joined,canonical_id:'internal',raw:JSON.stringify({...JSON.parse(joined.raw),summary:'Daily comercial'})},{...joined,canonical_id:'noGuest',raw:JSON.stringify({...JSON.parse(joined.raw),attendees:[{email:own},{email:'luccas@metodohod.com'}]})}],[own,'leandrobatsta@gmail.com'],true,'2026-10-04');
+assert.equal(audit.records.length,2);assert.equal(audit.records.find(r=>r.id==='joined').closer,'Luccas');assert.equal(audit.records.find(r=>r.id==='personalJoined').closer,'Marcos');
+console.log('Participant + closer + guest, both accounts, internal exclusion and deduplication passed.');
