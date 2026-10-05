@@ -61,10 +61,9 @@ export async function readHistoricalAnalytics(owner:string,existingCalendars?:Ca
  if(!authors.length)return historicalAnalytics([],[],false,DateTime.now().setZone(zone).toISODate()!);
  const placeholders=authors.map(()=>'?').join(',');
  const sources=await all<HistoricalSource>(`WITH candidates AS (
- SELECT e.*,ROW_NUMBER() OVER(PARTITION BY e.canonical_id ORDER BY e.deleted,CASE WHEN c.role='owner' THEN 0 ELSE 1 END,e.calendar_id) rn,
- MIN(NULLIF(e.created_at,'')) OVER(PARTITION BY e.canonical_id) first_created
+ SELECT e.canonical_id,e.calendar_id,e.created_at first_created,e.starts_at,e.deleted,e.title,e.raw
  FROM google_events e JOIN calendars c ON c.owner=e.owner AND c.id=e.calendar_id
- WHERE e.owner=? AND (e.created_at>='2026-02-01T00:00:00-03:00' OR e.starts_at>='2026-02-01T00:00:00-03:00')
+ WHERE e.owner=? AND (e.created_at>='2026-01-01T00:00:00-03:00' OR e.starts_at>='2026-01-01T00:00:00-03:00')
  AND (e.kind='consultoria' OR lower(e.title) LIKE '%consultoria%' OR lower(json_extract(e.raw,'$.organizer.email')) IN (${placeholders}) OR lower(json_extract(e.raw,'$.creator.email')) IN (${placeholders}) OR EXISTS(SELECT 1 FROM json_each(e.raw,'$.attendees') guest WHERE lower(json_extract(guest.value,'$.email')) IN (${placeholders}))))
  SELECT canonical_id,calendar_id,first_created created_at,starts_at,deleted,
  json_object('summary',title,'created',first_created,'start',json_object('dateTime',starts_at),
@@ -73,7 +72,7 @@ export async function readHistoricalAnalytics(owner:string,existingCalendars?:Ca
  'attendees',json(COALESCE((SELECT json_group_array(json_object('email',json_extract(value,'$.email'),'displayName',json_extract(value,'$.displayName'))) FROM json_each(candidates.raw,'$.attendees')),'[]')),
  'description',substr(json_extract(raw,'$.description'),1,4000)) raw
  FROM candidates`,owner,...authors,...authors,...authors);
- const sourceMonths=await all<{month:string;created:number;meetings:number}>(`WITH counts AS (SELECT strftime('%Y-%m',created_at,'-3 hours') month,COUNT(DISTINCT canonical_id) created,0 meetings FROM google_events WHERE owner=? AND kind='consultoria' AND created_at>='2026-02-01T00:00:00-03:00' GROUP BY month UNION ALL SELECT substr(date,1,7) month,0 created,COUNT(DISTINCT canonical_id) meetings FROM google_events WHERE owner=? AND kind='consultoria' AND date>='2026-02-01' GROUP BY month) SELECT month,SUM(created) created,SUM(meetings) meetings FROM counts WHERE month IS NOT NULL GROUP BY month`,owner,owner);
+ const sourceMonths=await all<{month:string;created:number;meetings:number}>(`WITH counts AS (SELECT strftime('%Y-%m',created_at,'-3 hours') month,COUNT(DISTINCT canonical_id) created,0 meetings FROM google_events WHERE owner=? AND kind='consultoria' AND created_at>='2026-01-01T00:00:00-03:00' GROUP BY month UNION ALL SELECT substr(date,1,7) month,0 created,COUNT(DISTINCT canonical_id) meetings FROM google_events WHERE owner=? AND kind='consultoria' AND date>='2026-01-01' GROUP BY month) SELECT month,SUM(created) created,SUM(meetings) meetings FROM counts WHERE month IS NOT NULL GROUP BY month`,owner,owner);
  const historical=historicalAnalytics(sources,personal.map(c=>c.id),personal.length>0&&calendars.filter(c=>c.selected||c.role==='owner').every(c=>Boolean(c.last_sync&&!c.error&&!c.page_token&&!c.generation))&&connected.every(a=>a.status==='connected'),DateTime.now().setZone(zone).toISODate()!,aliases,(prefs?JSON.parse(prefs.json).historicalCloserAliases:[])||[],(prefs?JSON.parse(prefs.json).historicalCloserProposals:[])||[],(prefs?JSON.parse(prefs.json).historicalCloserAssignments:[])||[],(prefs?JSON.parse(prefs.json).historicalSdrEmails:[])||[]);
  historical.coverage.sourceMonths=sourceMonths;return historical;
 }

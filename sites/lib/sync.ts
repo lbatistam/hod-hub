@@ -1,5 +1,5 @@
 import {all,one,run,batch,database} from '@/db/raw';
-import {accessToken} from './google-connection';
+import {accessToken,connectionAccounts} from './google-connection';
 import {normalizeEvent,type GoogleEvent} from './domain';
 import {ProofError} from './google-proof';
 import {SYNC_FRESHNESS_MS} from './live-policy';
@@ -10,15 +10,28 @@ export async function syncStep(owner:string,calendarId?:string){
  const available=calendars.find(c=>(!calendarId||c.id===calendarId)&&c.lease_until<Date.now());if(!available)return {status:'busy',pending:true,message:'Uma sincronização já está em andamento.'};
  const c=available,lease=crypto.randomUUID();const locked=await run('UPDATE calendars SET lease=?,lease_until=? WHERE owner=? AND id=? AND lease_until<?',lease,Date.now()+120000,owner,c.id,Date.now());if(!locked.meta.changes)return {status:'busy',pending:true};
  try{
- const token=await accessToken(owner,false,c.connection_account||undefined);const renewWindow=!c.page_token&&c.coverage_to&&Date.parse(c.coverage_to)<Date.now()+365*86400000;const pageSize=c.role==='owner'&&!c.mode&&!c.sync_token&&!c.page_token?250:c.mode?.endsWith(':2500')||(!c.mode&&!c.sync_token&&!c.page_token)?2500:250;let mode=c.page_token?(c.mode||'full'):`${c.sync_token&&!renewWindow?'incremental':'full'}${pageSize===2500?':2500':''}`;let generation=c.generation||crypto.randomUUID();let page=c.page_token;
+ const token=await accessToken(owner,false,c.connection_account||undefined);const renewWindow=!c.page_token&&c.coverage_to&&Date.parse(c.coverage_to)<Date.now()+365*86400000;const pageSize=250;let mode=c.page_token?(c.mode||'full'):(c.sync_token&&!renewWindow?'incremental':'full');let generation=c.generation||crypto.randomUUID();let page=c.page_token;
  const from=c.coverage_from||'2020-01-01T00:00:00-03:00';const to=(!renewWindow&&c.coverage_to)||new Date(Date.now()+730*86400000).toISOString();
  // Each page is a transaction. Only the final page advances the sync cursor.
  const u=new URL(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(c.id)}/events`);
  u.searchParams.set('maxResults',String(pageSize));u.searchParams.set('singleEvents','true');u.searchParams.set('showDeleted','true');
  if(mode.startsWith('incremental'))u.searchParams.set('syncToken',c.sync_token!);else {u.searchParams.set('timeMin',from);u.searchParams.set('timeMax',to)}
  if(page)u.searchParams.set('pageToken',page);
- const response=await fetch(u,{headers:{Authorization:`Bearer ${token}`},signal:AbortSignal.timeout(20000)});
+ let response=await fetch(u,{headers:{Authorization:`Bearer ${token}`},signal:AbortSignal.timeout(20000)});
  if(response.status===410){await run("UPDATE calendars SET sync_token=NULL,page_token=NULL,generation=NULL,mode=NULL,error=NULL WHERE owner=? AND id=? AND lease=?",owner,c.id,lease);return {status:'reset',pending:true,calendar:c.name,message:'Reconstruindo a leitura após expiração do cursor.'};}
+ if(response.status===404&&c.role!=='owner'){
+ // Another independently authorized account may still have this calendar shared.
+ for(const account of await connectionAccounts(owner)){
+ if(account.account===c.connection_account||account.status!=='connected')continue;
+ try{const alternate=await accessToken(owner,false,account.account);const retry=await fetch(u,{headers:{Authorization:`Bearer ${alternate}`},signal:AbortSignal.timeout(20000)});if(retry.ok){response=retry;await run('UPDATE calendars SET connection_account=? WHERE owner=? AND id=? AND lease=?',account.account,owner,c.id,lease);break}}catch{}
+ }
+ }
+ if(response.status===404&&c.role!=='owner'){
+ // Revoked shared calendars cannot be refreshed. Preserve their historical snapshot,
+ // remove them from active availability, and let discovery restore selection if shared again.
+ await run('UPDATE calendars SET selected=0,page_token=NULL,generation=NULL,mode=NULL,error=? WHERE owner=? AND id=? AND lease=?','Agenda não compartilhada pelo Google. Histórico salvo preservado.',owner,c.id,lease);
+ return {status:'unavailable',pending:true,calendar:c.name,events:0,message:'Compartilhamento indisponível; histórico preservado.'};
+ }
  if(!response.ok){const code=response.status===401?'reconnect_required':'google_unavailable';if(response.status===401){if(c.connection_account)await run("UPDATE google_accounts SET expires=0 WHERE owner=? AND account=?",owner,c.connection_account);else await run("UPDATE google_connections SET expires=0 WHERE owner=?",owner);}throw new ProofError(response.status===401?409:502,code,`Não foi possível sincronizar ${c.name} (Google ${response.status}). Os registros anteriores foram preservados.`)}
  const data=await response.json() as {items?:GoogleEvent[];nextPageToken?:string;nextSyncToken?:string};if(data.items!==undefined&&!Array.isArray(data.items))throw new Error('Malformed sync');
  const statements:D1PreparedStatement[]=[];
@@ -37,7 +50,7 @@ export async function syncStep(owner:string,calendarId?:string){
  if(!data.nextSyncToken)throw new Error('Missing complete sync token');
  const finish=[];
  if(mode.startsWith('full'))finish.push(database().prepare('UPDATE google_events SET deleted=1 WHERE owner=? AND calendar_id=? AND generation<>? AND julianday(starts_at)>=julianday(?) AND julianday(starts_at)<julianday(?)').bind(owner,c.id,generation,from,to));
- finish.push(database().prepare('UPDATE calendars SET sync_token=?,page_token=NULL,generation=NULL,mode=?,last_sync=?,coverage_from=?,coverage_to=?,error=NULL WHERE owner=? AND id=? AND lease=?').bind(data.nextSyncToken,pageSize===2500?'incremental:2500':null,new Date().toISOString(),from,to,owner,c.id,lease));
+ finish.push(database().prepare('UPDATE calendars SET sync_token=?,page_token=NULL,generation=NULL,mode=?,last_sync=?,coverage_from=?,coverage_to=?,error=NULL WHERE owner=? AND id=? AND lease=?').bind(data.nextSyncToken,null,new Date().toISOString(),from,to,owner,c.id,lease));
  await database().batch(finish);
  const remaining=calendars.some(x=>x.id!==c.id&&(!x.last_sync||x.page_token||Date.parse(x.last_sync)<Date.now()-SYNC_FRESHNESS_MS));
  return {status:'success',pending:remaining,calendar:c.name,events:data.items?.length||0};

@@ -43,14 +43,14 @@ const business=historicalAnalytics([event('vendor',{summary:'Reunião Estratégi
 const prefixed=historicalAnalytics([event('prefix',{summary:'HOD - Giovanna Baltoe'}),event('normal',{summary:'Consultoria Giovanna Baltoe'})],[own],true,'2026-10-04');assert.equal(prefixed.records.length,1);assert.equal(prefixed.coverage.duplicateLeads,1);
 console.log('Vendor/director internal meeting exclusions and HOD prefix lead deduplication passed.');
 
-const januarySource=event('january',{summary:'Consultoria Lead janeiro',created:'2026-01-15T12:00:00Z',start:{dateTime:'2026-01-20T18:00:00-03:00'}});januarySource.created_at='2026-01-15T12:00:00Z';
-const februaryMeetingCreatedInJanuary=event('february-meeting',{summary:'Consultoria Lead reagendado',created:'2026-01-31T12:00:00Z',start:{dateTime:'2026-02-02T18:00:00-03:00'}});februaryMeetingCreatedInJanuary.created_at='2026-01-31T12:00:00Z';
-const period=historicalAnalytics([januarySource,februaryMeetingCreatedInJanuary],[own],true,'2026-10-04');assert.equal(period.coverage.from,'2026-02-01');assert.deepEqual(period.records.map(r=>r.id),['february-meeting']);assert.equal(period.records[0].created,'2026-01-31');assert.equal(period.records[0].date,'2026-02-02');
-console.log('January-only records are excluded while meetings scheduled for February remain available in the meeting-date dimension.');
-
 const rafaelJune=event('rafael-june',{created:'2026-06-20T12:00:00Z',start:{dateTime:'2026-06-30T18:00:00-03:00'},attendees:[{email:'rafael@metodohod.com'},{email:'june-lead@example.com'}]});
 const rafaelJuly=event('rafael-july',{created:'2026-07-01T12:00:00Z',start:{dateTime:'2026-07-01T18:00:00-03:00'},attendees:[{email:'rafael@metodohod.com'},{email:'july-lead@example.com'}]});
 const cutoff=historicalAnalytics([rafaelJune,rafaelJuly],[own],true,'2026-10-04');
 assert.deepEqual(cutoff.records.map(r=>[r.date,r.closer]),[['2026-06-30','Rafael'],['2026-07-01','Overbooking']]);
 assert.equal(cutoff.records[1].credits[0].former,false);
 console.log('Rafael remains Rafael through 30/06; from 01/07 inclusive historical records are classified as Overbooking.');
+
+const reserve=(id,attendees=[{email:'marcos@metodohod.com'},{email:'leandrobatsta@gmail.com'}],date='2026-01-20')=>({...event(id,{summary:'AGENDA HOD (Leandro Batista)',created:'2026-01-19T17:17:05Z',organizer:{email:'marcos@metodohod.com'},start:{dateTime:date+'T14:00:00-03:00'},attendees}),calendar_id:'leandrobatsta@gmail.com'});
+const jan=historicalAnalytics([reserve('r1'),{...reserve('r1'),calendar_id:'marcos@metodohod.com'},reserve('r2'),reserve('notMarcos',[{email:own}]),reserve('feb',undefined,'2026-02-20'),event('ordinaryJan',{start:{dateTime:'2026-01-25T14:00:00-03:00'}})],[own,'leandrobatsta@gmail.com'],true,'2026-10-05');
+assert.equal(jan.records.length,2);assert.ok(jan.records.every(r=>r.januaryReservation&&r.closer==='Marcos'));assert.equal(jan.coverage.duplicateLeads,0);
+console.log('January Marcos-only reservations: copies deduplicated, distinct bookings retained, no lead required, other dates/people excluded.');
