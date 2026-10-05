@@ -47,3 +47,10 @@ const januarySource=event('january',{summary:'Consultoria Lead janeiro',created:
 const februaryMeetingCreatedInJanuary=event('february-meeting',{summary:'Consultoria Lead reagendado',created:'2026-01-31T12:00:00Z',start:{dateTime:'2026-02-02T18:00:00-03:00'}});februaryMeetingCreatedInJanuary.created_at='2026-01-31T12:00:00Z';
 const period=historicalAnalytics([januarySource,februaryMeetingCreatedInJanuary],[own],true,'2026-10-04');assert.equal(period.coverage.from,'2026-02-01');assert.deepEqual(period.records.map(r=>r.id),['february-meeting']);assert.equal(period.records[0].created,'2026-01-31');assert.equal(period.records[0].date,'2026-02-02');
 console.log('January-only records are excluded while meetings scheduled for February remain available in the meeting-date dimension.');
+
+const rafaelJune=event('rafael-june',{created:'2026-06-20T12:00:00Z',start:{dateTime:'2026-06-30T18:00:00-03:00'},attendees:[{email:'rafael@metodohod.com'},{email:'june-lead@example.com'}]});
+const rafaelJuly=event('rafael-july',{created:'2026-07-01T12:00:00Z',start:{dateTime:'2026-07-01T18:00:00-03:00'},attendees:[{email:'rafael@metodohod.com'},{email:'july-lead@example.com'}]});
+const cutoff=historicalAnalytics([rafaelJune,rafaelJuly],[own],true,'2026-10-04');
+assert.deepEqual(cutoff.records.map(r=>[r.date,r.closer]),[['2026-06-30','Rafael'],['2026-07-01','Overbooking']]);
+assert.equal(cutoff.records[1].credits[0].former,false);
+console.log('Rafael remains Rafael through 30/06; from 01/07 inclusive historical records are classified as Overbooking.');

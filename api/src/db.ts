@@ -269,7 +269,7 @@ seedSetting.run('work_hours', JSON.stringify({ workStart: '08:00', workEnd: '23:
 seedSetting.run('slot_config', JSON.stringify({ durationMinutes: 60, stepMinutes: 60 }));
 seedSetting.run(
   'operation',
-  JSON.stringify({ autoCloseMinutes: 50, overbookingFrom: '2026-07-15', timezone: 'America/Sao_Paulo' })
+  JSON.stringify({ autoCloseMinutes: 50, overbookingFrom: '2026-07-01', timezone: 'America/Sao_Paulo' })
 );
 seedSetting.run(
   'business_rules',

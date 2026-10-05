@@ -20,7 +20,11 @@ Closer reconhecido e lead são obrigatórios. Sem closer, preservar o evento bru
 2. No Analytics, unificar eventos elegíveis com **nome de lead igual**, sem diferença de maiúsculas, acentos, pontuação ou espaços. Sufixos explícitos de reagendamento/retorno são removidos. Não usar correspondência aproximada.
 3. Janeiro de 2026 é exibido como **Sem dados** e fica fora do Analytics, dos totais, dos gráficos, rankings e exportações. A análise auditável começa em 01/02/2026; os eventos de janeiro continuam preservados nas fontes brutas e na operação. Cada lead conta uma única vez a partir de fevereiro, ainda que tenha sido agendado quatro vezes. Homônimos exatos são unidos por esta regra solicitada pelo proprietário.
 4. O registro de referência é o de primeira criação verificada. Esse dia determina o mês padrão; a dimensão reunião usa a reunião desse registro. As duas datas permanecem separadas em America/Sao_Paulo. Reagendamentos não reaparecem como novos leads em meses posteriores.
-5. Unir todos os closers associados ao lead elegível, concedendo **um crédito por lead por closer**. Dois closers no convite recebem ambos o crédito. A soma do ranking pode superar o total de leads.
+5. Unir todos os closers associados ao lead elegível, concedendo **um crédito por lead por closer**. Dois closers no convite recebem ambos o crédito. A soma do ranking pode superar o total de leads. Overbooking fica fora do ranking individual, mas permanece no volume total.
+
+## Regra temporal do Rafael
+
+Até 30/06/2026, reuniões identificadas na agenda do Rafael continuam atribuídas a **Rafael**. A partir de 01/07/2026, inclusive, essas reuniões aparecem como **Overbooking** e deixam de compor o ranking individual dos closers. O volume total de leads/agendamentos continua incluindo esses registros. A data usada para aplicar o corte é a data da reunião em America/Sao_Paulo; a dimensão de criação continua selecionando o mês do lead, sem mudar a classificação do closer.
 
 Deduplicar a base elegível desde fevereiro antes de aplicar filtros de período/equipe. Não permitir que um registro de janeiro suprima um lead reagendado dentro da janela auditada. Cada filtro usa a mesma base e os mesmos créditos nas telas e exportações. O Organograma, estados operacionais, histórico, observações e reuniões individuais no banco permanecem intactos; o corte é exclusivo da contagem histórica.
 

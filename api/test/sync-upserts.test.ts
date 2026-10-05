@@ -38,7 +38,7 @@ describe('upserts do sync (placeholders × valores)', () => {
 
   it('events: 17 colunas, 17 valores, conflito atualiza', () => {
     assert.equal(placeholders(UPSERT_EVENT_SQL), 17);
-    const cal = db.prepare(UPSERT_CALENDAR_SQL).get(1, 'r@x.com', 'R', 'Rafael', '#000', 'overbooking', 1, '2026-07-15', 1, 'reader', 'active') as { id: number };
+    const cal = db.prepare(UPSERT_CALENDAR_SQL).get(1, 'r@x.com', 'R', 'Rafael', '#000', 'overbooking', 1, '2026-07-01', 1, 'reader', 'active') as { id: number };
     const stmt = db.prepare(UPSERT_EVENT_SQL);
     const vals: unknown[] = ['1:abc', 'abc', cal.id, '2026-09-14', 'Consultoria X', 'X', null, null, '2026-09-14T10:00:00-03:00', '2026-09-14T11:00:00-03:00', 0, 1, 'needsAction', 'org@x.com', 'consultoria', '2026-09-01T00:00:00Z', '{}'];
     stmt.run(...vals);

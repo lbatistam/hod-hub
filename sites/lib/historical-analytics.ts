@@ -42,7 +42,7 @@ export function historicalAnalytics(sources:HistoricalSource[],accounts:string[]
  const recipients=assigned?[assigned]:candidates.map(a=>eventRoster.get(a)!);
  if(!recipients.length){coverage.excludedWithoutCloser++;continue}
  if(!leadContact){coverage.excludedWithoutLead++;continue}
- const credits:CloserCredit[]=recipients.map(c=>({name:c.name,color:c.color,former:['former','sdr'].includes(c.teamStatus||''),formerLabel:c.name==='Álvaro'?'Ex-Closer':['Graziela','Karina','Larissa'].includes(c.name)?'Antiga membra':'Antigo membro'}));
+ const credits:CloserCredit[]=recipients.map(c=>{const overbooking=c.role==='overbooking'&&Boolean(c.overbookingFrom)&&date>=c.overbookingFrom!;const name=overbooking?'Overbooking':c.name;return {name,color:c.color,former:!overbooking&&['former','sdr'].includes(c.teamStatus||''),formerLabel:name==='Álvaro'?'Ex-Closer':['Graziela','Karina','Larissa'].includes(name)?'Antiga membra':'Antigo membro'}});
  if(namedConsultoria)coverage.matchedByTitle++;else coverage.matchedByParticipation++;
  const closer=recipients[0],attribution='verified' as const;if(!created)coverage.withoutCreated++;
 

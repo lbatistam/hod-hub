@@ -67,7 +67,7 @@ describe('equipe (V1 closers)', () => {
   it('Rafael é over; Álvaro é sdr; Misael é histórico; Luccas está ativo', () => {
     const rafa = closerForCalendar({ id: 'rafael@metodohod.com', summary: 'Rafael' });
     assert.equal(rafa.isOverbooking, true);
-    assert.equal(rafa.overbookingFrom, '2026-07-15');
+    assert.equal(rafa.overbookingFrom, '2026-07-01');
     const alvaro = closerForCalendar({ id: 'alvaro@metodohod.com', summary: 'Álvaro' });
     assert.equal(alvaro.teamStatus, 'sdr');
     const misael = closerForCalendar({ id: 'misael@metodohod.com', summary: 'Misael' });
