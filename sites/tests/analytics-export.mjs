@@ -12,3 +12,7 @@ const multi=exportDataset({...data,records:[{...record,former:false,credits:[{na
 const formerOnly=exportDataset({...data,records:[{...record,former:false,credits:[{name:'Karina',former:true,formerLabel:'Antiga membra'},{name:'Luccas',former:false,formerLabel:'Antigo membro'}]}]},'2026-01-01','2026-02-28','creation','former');assert.equal(formerOnly.total,1);assert.equal(formerOnly.ranking.length,1);assert.equal(formerOnly.ranking[0].closer,'Karina');
 
 const gap=exportDataset({...data,records:[],coverage:{...data.coverage,personalConnected:true,sourceMonths:[{month:'2026-08',created:10,meetings:9}]}},'2026-08-01','2026-08-31','creation','all');assert.equal(gap.months[0].count,0);assert.match(gap.months[0].coverage,/Nenhum novo lead/);
+
+const split=exportDataset({...data,records:[{...record,id:'rafa',created:'2026-06-20',date:'2026-06-30',closer:'Rafael',former:false},{...record,id:'over',created:'2026-07-01',date:'2026-07-01',closer:'Overbooking',former:false}]},'2026-02-01','2026-09-30','creation','all');
+assert.equal(split.total,2);assert.equal(split.ranking.length,2);assert.equal(split.ranking.find(r=>r.closer==='Rafael').count,1);assert.equal(split.ranking.find(r=>r.closer==='Overbooking').count,1);assert.equal(split.ranking.find(r=>r.closer==='Overbooking').status,'Fila');
+console.log('Rafael and Overbooking appear as independent ranking rows without changing total bookings.');
