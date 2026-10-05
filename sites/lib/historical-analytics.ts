@@ -15,7 +15,7 @@ export function historicalAnalytics(sources:HistoricalSource[],accounts:string[]
  // Aliases are owner-confirmed person mappings stored privately, independent of calendar access.
  for(const alias of closerAliases.filter(a=>!a.eventId)){const person=configuredClosers.find(c=>c.name===(alias.name==='Lucas'?'Luccas':alias.name)&&c.calendar!=='reuniao@metodohod.com');if(person&&!own.has(alias.email.toLowerCase()))roster.set(alias.email.toLowerCase(),person)}
  const groups=new Map<string,HistoricalSource[]>();for(const s of sources){const list=groups.get(s.canonical_id)||[];list.push(s);groups.set(s.canonical_id,list)}
- const coverage={accounts,authorAccounts:[...own],from:'2026-01-01',until,complete,personalConnected:accounts.some(a=>a.endsWith('@gmail.com')),review:0,withoutCreated:0,excludedOtherAuthors:0,excludedInternal:0,cancelled:0,sourceCopies:sources.length,uniqueEvents:groups.size,excludedOtherSdr:0,excludedWithoutCloser:0,excludedWithoutLead:0,duplicateLeads:0,matchedByTitle:0,matchedByParticipation:0};const records:HistoricalBooking[]=[];const people=new Map<string,{ids:Set<string>;leads:Set<string>}>();const configured=new Set(configuredClosers.map(c=>c.calendar));
+ const coverage={accounts,authorAccounts:[...own],from:'2026-02-01',until,complete,personalConnected:accounts.some(a=>a.endsWith('@gmail.com')),review:0,withoutCreated:0,excludedOtherAuthors:0,excludedInternal:0,cancelled:0,sourceCopies:sources.length,uniqueEvents:groups.size,excludedOtherSdr:0,excludedWithoutCloser:0,excludedWithoutLead:0,duplicateLeads:0,matchedByTitle:0,matchedByParticipation:0};const records:HistoricalBooking[]=[];const people=new Map<string,{ids:Set<string>;leads:Set<string>}>();const configured=new Set(configuredClosers.map(c=>c.calendar));
  for(const [id,copies] of groups){const ordered=[...copies].sort((a,b)=>a.deleted-b.deleted||a.calendar_id.localeCompare(b.calendar_id));const primary=ordered.find(s=>own.has(s.calendar_id.toLowerCase()))||ordered[0];let e:GoogleEvent;try{e=JSON.parse(primary.raw)}catch{continue}
  const allEvents=ordered.map(s=>{try{return JSON.parse(s.raw) as GoogleEvent}catch{return null}}).filter((x):x is GoogleEvent=>Boolean(x));
  const hosted=allEvents.some(x=>own.has((x.organizer?.email||'').toLowerCase())||own.has((x.creator?.email||'').toLowerCase()));
@@ -34,8 +34,9 @@ export function historicalAnalytics(sources:HistoricalSource[],accounts:string[]
  const start=e.start?.dateTime||e.start?.date||primary.starts_at;const date=DateTime.fromISO(start,{zone:'America/Sao_Paulo'}).toISODate();if(!date)continue;
  const createdAt=allEvents.map(x=>x.created||'').filter(Boolean).sort()[0]||copies.map(s=>s.created_at||'').filter(Boolean).sort()[0]||'';
  const created=createdAt?DateTime.fromISO(createdAt,{zone:'America/Sao_Paulo'}).toISODate()||'':'';
- // Keep future meetings created within the career interval. UI explicitly chooses creation or meeting date.
- if(!(created>='2026-01-01'&&created<=until)&&!(date>='2026-01-01'&&date<=until))continue;
+ // January 2026 is intentionally outside this audited Analytics period. Keep records
+ // from February onward by creation or meeting date so the UI can select either dimension.
+ if(!(created>='2026-02-01'&&created<=until)&&!(date>='2026-02-01'&&date<=until))continue;
  for(const email of participants){if(own.has(email)||otherSdr.has(email)||eventRoster.has(email)||configured.has(email))continue;const person=people.get(email)||{ids:new Set<string>(),leads:new Set<string>()};person.ids.add(id);const lead=(extractConsultoriaLead(title)||title).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s*[-–(].*$/,'').trim();person.leads.add(lead);people.set(email,person)}
  const confirmed=assignments.find(a=>a.id===id);const assigned=confirmed?configuredClosers.find(c=>c.name===(confirmed.name==='Lucas'?'Luccas':confirmed.name)&&c.calendar!=='reuniao@metodohod.com'):null;
  const recipients=assigned?[assigned]:candidates.map(a=>eventRoster.get(a)!);

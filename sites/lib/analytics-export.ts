@@ -3,13 +3,14 @@ import {zipSync,strToU8} from 'fflate';
 import type {HistoricalAnalytics} from './historical-analytics';
 type Cell=string|number;
 export function exportDataset(data:HistoricalAnalytics,from:string,to:string,dimension:string,team:string){
- const records=data.records.filter(r=>{const day=dimension==='meeting'?r.date:r.created;return day>=from&&day<=to&&(team==='all'||(team==='former'?(r.credits||[{former:r.former}]).some(c=>c.former):(r.credits||[{former:r.former}]).some(c=>!c.former)))});
+ const effectiveFrom=from<'2026-02-01'?'2026-02-01':from,effectiveTo=to<'2026-02-01'?effectiveFrom:to;
+ const records=data.records.filter(r=>{const day=dimension==='meeting'?r.date:r.created;return day>=effectiveFrom&&day<=effectiveTo&&(team==='all'||(team==='former'?(r.credits||[{former:r.former}]).some(c=>c.former):(r.credits||[{former:r.former}]).some(c=>!c.former)))});
  const ranks=new Map<string,{closer:string;count:number;status:string}>();for(const r of records){if(r.attribution!=='verified')continue;for(const c of r.credits||[{name:r.closer,former:r.former,formerLabel:r.formerLabel}]){if(team==='former'&&!c.former||team==='current'&&c.former)continue;const rank=ranks.get(c.name)||{closer:c.name,count:0,status:c.former?c.formerLabel:'Atual'};rank.count++;ranks.set(c.name,rank)}}
  const ranking=[...ranks.values()].sort((a,b)=>b.count-a.count||a.closer.localeCompare(b.closer));
- const monthly=new Map<string,number>();for(let m=DateTime.fromISO(from).startOf('month');m.toISODate()!<=to;m=m.plus({months:1})){monthly.set(m.toFormat('yyyy-MM'),0);if(monthly.size>120)break}for(const r of records){const m=(dimension==='meeting'?r.date:r.created).slice(0,7);monthly.set(m,(monthly.get(m)||0)+1)}
+ const monthly=new Map<string,number>();for(let m=DateTime.fromISO(effectiveFrom).startOf('month');m.toISODate()!<=effectiveTo;m=m.plus({months:1})){monthly.set(m.toFormat('yyyy-MM'),0);if(monthly.size>120)break}for(const r of records){const m=(dimension==='meeting'?r.date:r.created).slice(0,7);monthly.set(m,(monthly.get(m)||0)+1)}
  const partial=!data.coverage.complete||!data.coverage.personalConnected;
  const months=[...monthly].sort(([a],[b])=>a.localeCompare(b)).map(([month,count])=>({month,count,coverage:partial?'Parcial · cobertura pendente':count===0&&data.coverage.sourceMonths?.some(s=>s.month===month&&(dimension==='meeting'?s.meetings:s.created)>0)?'Nenhum novo lead na base selecionada':'Agendas conectadas importadas'}));
- return {exportedAt:new Date().toISOString(),timeZone:'America/Sao_Paulo',filters:{from,to,dimension,team},coverage:data.coverage,partial,total:records.length,review:records.filter(r=>r.attribution==='review').length,records,ranking,months};
+ return {exportedAt:new Date().toISOString(),timeZone:'America/Sao_Paulo',filters:{from:effectiveFrom,to:effectiveTo,dimension,team},coverage:data.coverage,partial,total:records.length,review:records.filter(r=>r.attribution==='review').length,records,ranking,months};
 }
 export function csv(rows:Cell[][]){const escape=(v:Cell)=>{let s=String(v);if(typeof v==='string'&&/^[\s]*[=+@-]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"'};return '\uFEFF'+rows.map(row=>row.map(escape).join(';')).join('\r\n')+'\r\n'}
 export function sheets(d:ReturnType<typeof exportDataset>){return [

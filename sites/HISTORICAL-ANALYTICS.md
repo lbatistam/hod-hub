@@ -1,4 +1,4 @@
-# Analytics histórico — regra vigente em 04/10/2026
+# Analytics histórico — regra vigente em 05/10/2026
 
 ## Fontes e privacidade
 
@@ -18,11 +18,11 @@ Closer reconhecido e lead são obrigatórios. Sem closer, preservar o evento bru
 
 1. Unificar cópias do mesmo convite por identidade canônica Google (iCalUID e ocorrência). Manter todos os convidados das cópias para não perder closers.
 2. No Analytics, unificar eventos elegíveis com **nome de lead igual**, sem diferença de maiúsculas, acentos, pontuação ou espaços. Sufixos explícitos de reagendamento/retorno são removidos. Não usar correspondência aproximada.
-3. Cada lead conta uma única vez em todo o histórico desde janeiro de 2026, ainda que tenha sido agendado quatro vezes. Homônimos exatos são unidos por esta regra solicitada pelo proprietário.
+3. Janeiro de 2026 é exibido como **Sem dados** e fica fora do Analytics, dos totais, dos gráficos, rankings e exportações. A análise auditável começa em 01/02/2026; os eventos de janeiro continuam preservados nas fontes brutas e na operação. Cada lead conta uma única vez a partir de fevereiro, ainda que tenha sido agendado quatro vezes. Homônimos exatos são unidos por esta regra solicitada pelo proprietário.
 4. O registro de referência é o de primeira criação verificada. Esse dia determina o mês padrão; a dimensão reunião usa a reunião desse registro. As duas datas permanecem separadas em America/Sao_Paulo. Reagendamentos não reaparecem como novos leads em meses posteriores.
 5. Unir todos os closers associados ao lead elegível, concedendo **um crédito por lead por closer**. Dois closers no convite recebem ambos o crédito. A soma do ranking pode superar o total de leads.
 
-Deduplicar a base completa antes de aplicar filtros de período/equipe. Cada filtro usa a mesma base e os mesmos créditos nas telas e exportações. O Organograma, estados operacionais, histórico, observações e reuniões individuais no banco permanecem intactos; esta deduplicação é exclusiva da contagem histórica.
+Deduplicar a base elegível desde fevereiro antes de aplicar filtros de período/equipe. Não permitir que um registro de janeiro suprima um lead reagendado dentro da janela auditada. Cada filtro usa a mesma base e os mesmos créditos nas telas e exportações. O Organograma, estados operacionais, histórico, observações e reuniões individuais no banco permanecem intactos; o corte é exclusivo da contagem histórica.
 
 ## Exportações e interface
 
@@ -34,4 +34,4 @@ Componentes oficiais OpenAI Apps SDK UI existentes preservados. Gráficos são b
 
 Testes históricos verificam título sem SDR, eventos antigos com participante, cópias de agenda, dois closers, aliases, quatro repetições em meses distintos, normalização de nomes, exclusões internas/outros SDRs, cancelamento e horário São Paulo. Testes de exportação verificam filtros, ranking, CSV e XLSX reais. TypeScript e build de produção passaram. Backend hospedado e dashboard privado foram conferidos após publicação, com meses recentes e Paulo/Luigi incluídos.
 
-Datas Google comprovam criação do evento, não a pessoa que executou o agendamento; a atribuição por título é uma regra expressamente confirmada pelo proprietário. Cancelamentos preservados continuam como agendamentos feitos. Eventos apagados antes da conexão não são reconstruídos. Não há métricas de presença/no-show neste Analytics. Janeiro reflete apenas os registros que atendem à regra nas fontes conectadas; não preencher lacunas com estimativas.
+Datas Google comprovam criação do evento, não a pessoa que executou o agendamento; a atribuição por título é uma regra expressamente confirmada pelo proprietário. Cancelamentos preservados continuam como agendamentos feitos. Eventos apagados antes da conexão não são reconstruídos. Não há métricas de presença/no-show neste Analytics. Janeiro está deliberadamente marcado **Sem dados** e não representa zero atividade nem é estimado a partir das fontes conectadas.

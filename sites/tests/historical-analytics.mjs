@@ -42,3 +42,8 @@ assert.equal(historicalAnalytics([joined],[own],true,'2026-10-04',[],[],[],[],['
 const business=historicalAnalytics([event('vendor',{summary:'Reunião Estratégica: Metodo Hod + Octadesk'}),event('director',{summary:'Apresentação Poli - Diretoria Home office digital'}),event('project',{summary:'Reunião Evolução de projeto - Metodo HOD & Octadesk'})],[own],true,'2026-10-04');assert.equal(business.records.length,0);assert.equal(business.coverage.excludedInternal,3);
 const prefixed=historicalAnalytics([event('prefix',{summary:'HOD - Giovanna Baltoe'}),event('normal',{summary:'Consultoria Giovanna Baltoe'})],[own],true,'2026-10-04');assert.equal(prefixed.records.length,1);assert.equal(prefixed.coverage.duplicateLeads,1);
 console.log('Vendor/director internal meeting exclusions and HOD prefix lead deduplication passed.');
+
+const januarySource=event('january',{summary:'Consultoria Lead janeiro',created:'2026-01-15T12:00:00Z',start:{dateTime:'2026-01-20T18:00:00-03:00'}});januarySource.created_at='2026-01-15T12:00:00Z';
+const februaryMeetingCreatedInJanuary=event('february-meeting',{summary:'Consultoria Lead reagendado',created:'2026-01-31T12:00:00Z',start:{dateTime:'2026-02-02T18:00:00-03:00'}});februaryMeetingCreatedInJanuary.created_at='2026-01-31T12:00:00Z';
+const period=historicalAnalytics([januarySource,februaryMeetingCreatedInJanuary],[own],true,'2026-10-04');assert.equal(period.coverage.from,'2026-02-01');assert.deepEqual(period.records.map(r=>r.id),['february-meeting']);assert.equal(period.records[0].created,'2026-01-31');assert.equal(period.records[0].date,'2026-02-02');
+console.log('January-only records are excluded while meetings scheduled for February remain available in the meeting-date dimension.');
